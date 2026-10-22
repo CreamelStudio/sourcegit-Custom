@@ -17,6 +17,19 @@ namespace SourceGit.Models
     {
         public const string RepositoryUrl = "https://github.com/CreamelStudio/sourcegit-Custom";
 
+        public static Version GetInstalledRelease(string lastShownTag)
+        {
+            var version = new Version { IsInstalled = true };
+            version.TagName = version.CurrentVersionStr;
+            if (lastShownTag == version.TagName)
+                return null;
+
+            using var stream = typeof(SelfUpdater).Assembly.GetManifestResourceStream("SourceGit.Resources.ReleaseNotes.md")!;
+            using var reader = new StreamReader(stream);
+            version.Body = reader.ReadToEnd();
+            return version;
+        }
+
         public static async Task<Version> CheckAsync()
         {
             using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(15) };

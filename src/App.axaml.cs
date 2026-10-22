@@ -527,10 +527,34 @@ namespace SourceGit
                 });
             };
 
-#if !DISABLE_UPDATE_DETECTION
-            if (pref.Check4UpdatesOnStartup)
-                Check4Update();
+            desktop.MainWindow.Opened += async (_, _) =>
+            {
+                _checkingForUpdate = true;
+                try
+                {
+                    var installed = Models.SelfUpdater.GetInstalledRelease(pref.LastShownReleaseTag);
+                    if (installed != null && await ShowSelfUpdateResultAsync(installed))
+                    {
+                        pref.LastShownReleaseTag = installed.TagName;
+                        pref.Save();
+                    }
+                }
+                catch (Exception e)
+                {
+                    Native.OS.LogException(e);
+                }
+                finally
+                {
+                    _checkingForUpdate = false;
+                }
 
+#if !DISABLE_UPDATE_DETECTION
+                if (pref.Check4UpdatesOnStartup)
+                    Check4Update();
+#endif
+            };
+
+#if !DISABLE_UPDATE_DETECTION
             _updateTimer = new DispatcherTimer { Interval = TimeSpan.FromHours(1) };
             _updateTimer.Tick += (_, _) =>
             {
@@ -557,7 +581,7 @@ namespace SourceGit
                     if (_launcher != null)
                         _launcher.NewVersion = null;
                     if (manually)
-                        ShowSelfUpdateResult(new Models.AlreadyUpToDate());
+                        await ShowSelfUpdateResultAsync(new Models.AlreadyUpToDate());
                     return;
                 }
 
@@ -570,13 +594,13 @@ namespace SourceGit
                 if (manually || _notifiedUpdateTag != version.TagName)
                 {
                     _notifiedUpdateTag = version.TagName;
-                    ShowSelfUpdateResult(version);
+                    await ShowSelfUpdateResultAsync(version);
                 }
             }
             catch (Exception e)
             {
                 if (manually)
-                    ShowSelfUpdateResult(new Models.SelfUpdateFailed(e));
+                    await ShowSelfUpdateResultAsync(new Models.SelfUpdateFailed(e));
             }
             finally
             {
@@ -584,24 +608,23 @@ namespace SourceGit
             }
         }
 
-        private void ShowSelfUpdateResult(object data)
+        private async Task<bool> ShowSelfUpdateResultAsync(object data)
         {
             try
             {
-                Dispatcher.UIThread.Invoke(async () =>
+                if (Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime { MainWindow: { } owner })
                 {
-                    if (Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime { MainWindow: { } owner })
-                    {
-                        var ctx = new ViewModels.SelfUpdate { Data = data };
-                        var dialog = new Views.SelfUpdate() { DataContext = ctx };
-                        await dialog.ShowDialog(owner);
-                    }
-                });
+                    var ctx = new ViewModels.SelfUpdate { Data = data };
+                    var dialog = new Views.SelfUpdate() { DataContext = ctx };
+                    await dialog.ShowDialog(owner);
+                    return true;
+                }
             }
             catch
             {
                 // Ignore exceptions.
             }
+            return false;
         }
         #endregion
 

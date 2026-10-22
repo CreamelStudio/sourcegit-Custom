@@ -76,6 +76,8 @@ Install this fork's ZIP release once to enable its updater. With **Check for upd
 
 On Windows, **Update and Restart** downloads the matching x64/ARM64 package, verifies its SHA-256 checksum, replaces only the application files, and restarts SourceGit. Settings, portable `data`, and repositories are preserved. Failed file replacement or restart restores the previous files. Use a writable installation folder; other running SourceGit instances must be closed.
 
+After installing a new version, its first launch shows the installed version and bundled release notes, including when offline. Closing the window acknowledges that version, so it is not shown again on the next launch. This also works when updating from a version that has no release-note acknowledgement setting.
+
 On macOS and Linux, the update notification links to this fork's release downloads; install with the platform's normal method. Package-manager instructions below use their respective distribution channels.
 
 This software creates a folder, which is platform-dependent, to store user settings, downloaded avatars and crash logs.

@@ -32,6 +32,20 @@ Check(release.PublishedAt.Year == 2026, "Read GitHub's release timestamp.");
 using (var installer = typeof(SelfUpdater).Assembly.GetManifestResourceStream("SourceGit.Resources.Scripts.update-windows.ps1"))
     Check(installer != null && installer.Length > 0, "The Windows installer must be embedded in the application.");
 
+var installed = SelfUpdater.GetInstalledRelease(null);
+Check(installed != null && installed.IsInstalled, "The first launch after upgrading from an older app must show installed release notes.");
+Check(installed.TagName == installed.CurrentVersionStr && !installed.IsNewVersion && !installed.CanAutoUpdate, "Installed notes must describe this binary and offer no installation action.");
+Check(!string.IsNullOrWhiteSpace(installed.Body), "Installed release notes must work without a network request.");
+Check(SelfUpdater.GetInstalledRelease(installed.TagName) == null, "Do not show the same installed version again.");
+Check(SelfUpdater.GetInstalledRelease("v2026.22.2")?.TagName == installed.TagName, "Show notes after updating from the previous release.");
+
+var preferences = JsonSerializer.Deserialize("{}", JsonCodeGen.Default.Preferences)!;
+Check(string.IsNullOrEmpty(preferences.LastShownReleaseTag), "Existing preference files must migrate without an installed-release marker.");
+preferences.LastShownReleaseTag = installed.TagName;
+var savedPreferences = JsonSerializer.Serialize(preferences, JsonCodeGen.Default.Preferences);
+var restoredPreferences = JsonSerializer.Deserialize(savedPreferences, JsonCodeGen.Default.Preferences)!;
+Check(SelfUpdater.GetInstalledRelease(restoredPreferences.LastShownReleaseTag) == null, "Persist the displayed version across restarts.");
+
 var root = Path.Combine(Path.GetTempPath(), "SourceGit.UpdateChecks", Guid.NewGuid().ToString("N"));
 Directory.CreateDirectory(root);
 try
@@ -86,4 +100,4 @@ finally
     Directory.Delete(root, true);
 }
 
-Console.WriteLine("Update checks passed: versions, platform assets, safe ZIP paths, package size and SHA-256.");
+Console.WriteLine("Update checks passed: versions, platform assets, installed release notes and persisted acknowledgement, safe ZIP paths, package size and SHA-256.");

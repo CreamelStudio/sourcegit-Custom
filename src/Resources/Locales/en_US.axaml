@@ -889,6 +889,7 @@
   <x:String x:Key="Text.ScanRepositories.UseCustomDir" xml:space="preserve">Scan another custom directory</x:String>
   <x:String x:Key="Text.SelfUpdate" xml:space="preserve">Check for Updates...</x:String>
   <x:String x:Key="Text.SelfUpdate.Available" xml:space="preserve">New version of this software is available: </x:String>
+  <x:String x:Key="Text.SelfUpdate.Installed" xml:space="preserve">Installed Version — What's New:</x:String>
   <x:String x:Key="Text.SelfUpdate.CurrentVersion" xml:space="preserve">Current Version: </x:String>
   <x:String x:Key="Text.SelfUpdate.Error" xml:space="preserve">Update failed!</x:String>
   <x:String x:Key="Text.SelfUpdate.GotoDownload" xml:space="preserve">Download</x:String>

@@ -45,18 +45,19 @@
             <StackPanel Orientation="Vertical" Margin="16,8">
               <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,8">
                 <Path Width="14" Height="14" Data="{StaticResource Icons.Info}" Fill="Green"/>
-                <TextBlock Margin="8,0,0,0" FontWeight="Bold" FontSize="14" Text="{DynamicResource Text.SelfUpdate.Available}"/>
+                <TextBlock Margin="8,0,0,0" FontWeight="Bold" FontSize="14" Text="{DynamicResource Text.SelfUpdate.Available}" IsVisible="{Binding !IsInstalled}"/>
+                <TextBlock Margin="8,0,0,0" FontWeight="Bold" FontSize="14" Text="{DynamicResource Text.SelfUpdate.Installed}" IsVisible="{Binding IsInstalled}"/>
                 <Border Margin="4,0,0,0" Height="20" CornerRadius="10" Background="{DynamicResource Brush.Accent}" Effect="drop-shadow(0 0 6 #40000000)">
                   <TextBlock Margin="8,0" Text="{Binding TagName}" FontSize="12" Foreground="White"/>
                 </Border>
               </StackPanel>
 
-              <TextBlock Margin="0,8,0,0">
+              <TextBlock Margin="0,8,0,0" IsVisible="{Binding !IsInstalled}">
                 <Run Text="{DynamicResource Text.SelfUpdate.CurrentVersion}" FontWeight="Bold" Foreground="{DynamicResource Brush.FG2}"/>
                 <Run Text="{Binding CurrentVersionStr, Mode=OneWay}"/>
               </TextBlock>
 
-              <TextBlock Margin="0,2,0,0">
+              <TextBlock Margin="0,2,0,0" IsVisible="{Binding !IsInstalled}">
                 <Run Text="{DynamicResource Text.SelfUpdate.ReleaseDate}" FontWeight="Bold" Foreground="{DynamicResource Brush.FG2}"/>
                 <Run Text="{Binding ReleaseDateStr, Mode=OneWay}"/>
               </TextBlock>
@@ -71,6 +72,14 @@
 
               <StackPanel Margin="0,8,0,0" Orientation="Horizontal" HorizontalAlignment="Center">
                 <Button Classes="flat primary"
+                        IsVisible="{Binding IsInstalled}"
+                        Height="30"
+                        Click="CloseWindow"
+                        Content="{DynamicResource Text.Close}"
+                        HorizontalContentAlignment="Center"
+                        VerticalContentAlignment="Center"/>
+
+                <Button Classes="flat primary"
                         IsVisible="{Binding CanAutoUpdate}"
                         Height="30"
                         Margin="0,0,8,0"
@@ -80,6 +89,7 @@
                         VerticalContentAlignment="Center"/>
 
                 <Button Classes="flat"
+                        IsVisible="{Binding !IsInstalled}"
                         Height="30"
                         Click="GotoDownload"
                         HorizontalContentAlignment="Center"
@@ -91,6 +101,7 @@
                 </Button>
 
                 <Button Classes="flat"
+                        IsVisible="{Binding !IsInstalled}"
                         Height="30"
                         Margin="8,0,0,0"
                         Click="IgnoreThisVersion"

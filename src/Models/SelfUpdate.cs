@@ -33,7 +33,10 @@ namespace SourceGit.Models
         public bool IsNewVersion => IsNewer(TagName, CurrentVersion);
 
         [JsonIgnore]
-        public bool CanAutoUpdate => OperatingSystem.IsWindows() &&
+        public bool IsInstalled { get; set; }
+
+        [JsonIgnore]
+        public bool CanAutoUpdate => !IsInstalled && OperatingSystem.IsWindows() &&
             RuntimeInformation.ProcessArchitecture is Architecture.X64 or Architecture.Arm64 &&
             FindAsset(RuntimeInformation.ProcessArchitecture == Architecture.Arm64 ? "win-arm64" : "win-x64") != null;
 

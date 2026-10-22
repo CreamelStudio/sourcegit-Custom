@@ -199,6 +199,12 @@ namespace SourceGit.ViewModels
             set => SetProperty(ref _ignoreUpdateTag, value);
         }
 
+        public string LastShownReleaseTag
+        {
+            get => _lastShownReleaseTag;
+            set => SetProperty(ref _lastShownReleaseTag, value);
+        }
+
         public bool ShowTagsInGraph
         {
             get => _showTagsInGraph;
@@ -828,6 +834,7 @@ namespace SourceGit.ViewModels
         private bool _check4UpdatesOnStartup = true;
         private double _lastCheckUpdateTime = 0;
         private string _ignoreUpdateTag = string.Empty;
+        private string _lastShownReleaseTag = string.Empty;
 
         private bool _showTagsInGraph = true;
         private bool _useTwoColumnsLayoutInHistories = false;

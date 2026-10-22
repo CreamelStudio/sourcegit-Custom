@@ -30,6 +30,8 @@ Windows ZIP releases support download, SHA-256 verification against the GitHub r
 
 The updater first becomes available after installing a release containing it. Future releases must keep the `sourcegit_<version>.win-x64.zip` / `win-arm64.zip` naming and flat `SourceGit/` application-file layout.
 
+Update `src/Resources/ReleaseNotes.md` with each release. It is embedded in the app and shown once after installing a different version, before online update checks. The acknowledged version is saved in preferences after the window closes, so the installed notes work offline and are not replaced by a newer release's notes.
+
 Updater checks run in the Windows x64 build. To run them locally with .NET 10 and Windows PowerShell:
 
 ```sh
