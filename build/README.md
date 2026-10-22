@@ -20,6 +20,23 @@ git push origin v2026.22.1
 
 A local tag starts a build only after it is pushed to GitHub. Branch pushes and tag pushes run their respective workflows separately.
 
+The Release workflow requires the tag version to match `VERSION`. Packages are uploaded to a draft release before it is published, so update checks see complete releases. A manual Release run must select a `v*` tag.
+
+## In-app updates
+
+The custom app checks `CreamelStudio/sourcegit-Custom` releases at startup and every hour when startup update checks are enabled. It uses the public GitHub API without a user token. Only newer numeric `v*` versions are offered; GitHub's latest-release endpoint excludes drafts and prereleases.
+
+Windows ZIP releases support download, SHA-256 verification against the GitHub release asset digest, application file replacement, rollback on replacement/restart failure, and restart. The installer preserves portable `data` and unrelated files. macOS/Linux retain release-download installation.
+
+The updater first becomes available after installing a release containing it. Future releases must keep the `sourcegit_<version>.win-x64.zip` / `win-arm64.zip` naming and flat `SourceGit/` application-file layout.
+
+Updater checks run in the Windows x64 build. To run them locally with .NET 10 and Windows PowerShell:
+
+```sh
+dotnet run --project tests/UpdateChecks -c Release -p:DisableAOT=true
+powershell -NoProfile -File tests/UpdateChecks/windows.ps1
+```
+
 ## How to build this project manually
 
 1. Make sure [.NET SDK 10](https://dotnet.microsoft.com/en-us/download) is installed on your machine.

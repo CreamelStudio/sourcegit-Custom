@@ -39,7 +39,7 @@
 
     <!-- Body -->
     <Grid Grid.Row="1">
-      <ContentControl Content="{Binding Data}">
+      <ContentControl Content="{Binding Data}" IsEnabled="{Binding !IsUpdating}">
         <ContentControl.DataTemplates>
           <DataTemplate DataType="m:Version">
             <StackPanel Orientation="Vertical" Margin="16,8">
@@ -71,6 +71,15 @@
 
               <StackPanel Margin="0,8,0,0" Orientation="Horizontal" HorizontalAlignment="Center">
                 <Button Classes="flat primary"
+                        IsVisible="{Binding CanAutoUpdate}"
+                        Height="30"
+                        Margin="0,0,8,0"
+                        Click="InstallUpdate"
+                        Content="{DynamicResource Text.SelfUpdate.InstallAndRestart}"
+                        HorizontalContentAlignment="Center"
+                        VerticalContentAlignment="Center"/>
+
+                <Button Classes="flat"
                         Height="30"
                         Click="GotoDownload"
                         HorizontalContentAlignment="Center"
@@ -135,6 +144,12 @@
           </DataTemplate>
         </ContentControl.DataTemplates>
       </ContentControl>
+      <Border IsVisible="{Binding IsUpdating}" Background="{DynamicResource Brush.Contents}" Padding="24">
+        <StackPanel VerticalAlignment="Center" Spacing="12">
+          <TextBlock Text="{DynamicResource Text.SelfUpdate.Downloading}" TextWrapping="Wrap" MaxWidth="450"/>
+          <ProgressBar Minimum="0" Maximum="100" Value="{Binding Progress}" Height="8"/>
+        </StackPanel>
+      </Border>
     </Grid>
   </Grid>
 </v:ChromelessWindow>

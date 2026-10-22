@@ -1,4 +1,6 @@
 using System;
+using System.Threading;
+
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -77,8 +79,44 @@ namespace SourceGit.Views
 
         private void GotoDownload(object _, RoutedEventArgs e)
         {
-            Native.OS.OpenBrowser("https://github.com/sourcegit-scm/sourcegit/releases/latest");
+            Native.OS.OpenBrowser(Models.SelfUpdater.RepositoryUrl + "/releases/latest");
             e.Handled = true;
+        }
+
+        private async void InstallUpdate(object _, RoutedEventArgs e)
+        {
+            e.Handled = true;
+            if (DataContext is not ViewModels.SelfUpdate { Data: Models.Version version, IsUpdating: false } vm)
+                return;
+
+            vm.IsUpdating = true;
+            vm.Progress = 0;
+            using var cancellation = new CancellationTokenSource();
+            _downloadCancellation = cancellation;
+            try
+            {
+                await Models.SelfUpdater.InstallAsync(version, new Progress<double>(value => vm.Progress = value), cancellation.Token);
+                App.Quit(0);
+            }
+            catch (OperationCanceledException)
+            {
+                // Closing the dialog cancels the download before installation.
+            }
+            catch (Exception exception)
+            {
+                vm.Data = new Models.SelfUpdateFailed(exception);
+            }
+            finally
+            {
+                _downloadCancellation = null;
+                vm.IsUpdating = false;
+            }
+        }
+
+        protected override void OnClosing(WindowClosingEventArgs e)
+        {
+            _downloadCancellation?.Cancel();
+            base.OnClosing(e);
         }
 
         private void IgnoreThisVersion(object sender, RoutedEventArgs e)
@@ -86,8 +124,13 @@ namespace SourceGit.Views
             if (sender is Button { DataContext: Models.Version ver })
                 ViewModels.Preferences.Instance.IgnoreUpdateTag = ver.TagName;
 
+            if (App.GetLauncher() is { } launcher)
+                launcher.NewVersion = null;
+
             Close();
             e.Handled = true;
         }
+
+        private CancellationTokenSource _downloadCancellation = null;
     }
 }

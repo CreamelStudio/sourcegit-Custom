@@ -64,6 +64,13 @@ jobs:
           sudo apt-get install -y llvm gcc-aarch64-linux-gnu
       - name: Build
         run: dotnet build -c Release
+      - name: Check updater
+        if: matrix.runtime == 'win-x64'
+        run: dotnet run --project tests/UpdateChecks -c Release -p:DisableAOT=true
+      - name: Check Windows update installation and rollback
+        if: matrix.runtime == 'win-x64'
+        shell: powershell
+        run: ./tests/UpdateChecks/windows.ps1
       - name: Publish
         run: dotnet publish src/SourceGit.csproj -c Release -o publish -r ${{ matrix.runtime }}
       - name: Rename executable file

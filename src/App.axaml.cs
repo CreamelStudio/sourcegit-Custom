@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -513,6 +512,7 @@ namespace SourceGit
 
             desktop.Exit += (_, _) =>
             {
+                _updateTimer?.Stop();
                 _ipcChannel?.Dispose();
                 _ipcChannel = null;
             };
@@ -528,52 +528,60 @@ namespace SourceGit
             };
 
 #if !DISABLE_UPDATE_DETECTION
-            if (pref.ShouldCheck4UpdateOnStartup())
+            if (pref.Check4UpdatesOnStartup)
                 Check4Update();
+
+            _updateTimer = new DispatcherTimer { Interval = TimeSpan.FromHours(1) };
+            _updateTimer.Tick += (_, _) =>
+            {
+                if (pref.Check4UpdatesOnStartup)
+                    Check4Update();
+            };
+            _updateTimer.Start();
 #endif
         }
         #endregion
 
         #region Check for Updates
-        private void Check4Update(bool manually = false)
+        private async void Check4Update(bool manually = false)
         {
-            if (_launcher != null)
-                _launcher.NewVersion = null;
+            if (_checkingForUpdate)
+                return;
 
-            Task.Run(async () =>
+            _checkingForUpdate = true;
+            try
             {
-                try
+                var version = await Models.SelfUpdater.CheckAsync();
+                if (version == null || !version.IsNewVersion)
                 {
-                    // Fetch latest release information.
-                    using var client = new HttpClient();
-                    client.Timeout = TimeSpan.FromSeconds(5);
-
-                    var data = await client.GetStringAsync("https://sourcegit-scm.github.io/data/version.json");
-                    var ver = JsonSerializer.Deserialize(data, JsonCodeGen.Default.Version);
-                    if (ver == null)
-                        return;
-
+                    if (_launcher != null)
+                        _launcher.NewVersion = null;
                     if (manually)
-                    {
-                        if (ver.IsNewVersion)
-                            ShowSelfUpdateResult(ver);
-                        else
-                            ShowSelfUpdateResult(new Models.AlreadyUpToDate());
-                    }
-                    else if (_launcher != null)
-                    {
-                        if (!ver.IsNewVersion || ver.TagName == ViewModels.Preferences.Instance.IgnoreUpdateTag)
-                            return;
-
-                        _launcher.NewVersion = ver;
-                    }
+                        ShowSelfUpdateResult(new Models.AlreadyUpToDate());
+                    return;
                 }
-                catch (Exception e)
+
+                if (!manually && version.TagName == ViewModels.Preferences.Instance.IgnoreUpdateTag)
+                    return;
+
+                if (_launcher != null)
+                    _launcher.NewVersion = version;
+
+                if (manually || _notifiedUpdateTag != version.TagName)
                 {
-                    if (manually)
-                        ShowSelfUpdateResult(new Models.SelfUpdateFailed(e));
+                    _notifiedUpdateTag = version.TagName;
+                    ShowSelfUpdateResult(version);
                 }
-            });
+            }
+            catch (Exception e)
+            {
+                if (manually)
+                    ShowSelfUpdateResult(new Models.SelfUpdateFailed(e));
+            }
+            finally
+            {
+                _checkingForUpdate = false;
+            }
         }
 
         private void ShowSelfUpdateResult(object data)
@@ -598,6 +606,9 @@ namespace SourceGit
         #endregion
 
         private Models.IpcChannel _ipcChannel = null;
+        private DispatcherTimer _updateTimer = null;
+        private bool _checkingForUpdate = false;
+        private string _notifiedUpdateTag = null;
         private ViewModels.Launcher _launcher = null;
         private ResourceDictionary _activeLocale = null;
         private ResourceDictionary _themeOverrides = null;

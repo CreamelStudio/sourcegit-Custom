@@ -3,8 +3,8 @@
 [![stars](https://img.shields.io/github/stars/sourcegit-scm/sourcegit.svg)](https://github.com/sourcegit-scm/sourcegit/stargazers)
 [![forks](https://img.shields.io/github/forks/sourcegit-scm/sourcegit.svg)](https://github.com/sourcegit-scm/sourcegit/forks)
 [![license](https://img.shields.io/github/license/sourcegit-scm/sourcegit.svg)](LICENSE)
-[![latest](https://img.shields.io/github/v/release/sourcegit-scm/sourcegit.svg)](https://github.com/sourcegit-scm/sourcegit/releases/latest)
-[![downloads](https://img.shields.io/github/downloads/sourcegit-scm/sourcegit/total)](https://github.com/sourcegit-scm/sourcegit/releases)
+[![latest](https://img.shields.io/github/v/release/CreamelStudio/sourcegit-Custom.svg)](https://github.com/CreamelStudio/sourcegit-Custom/releases/latest)
+[![downloads](https://img.shields.io/github/downloads/CreamelStudio/sourcegit-Custom/total)](https://github.com/CreamelStudio/sourcegit-Custom/releases)
 
 ## Screenshots
 
@@ -68,7 +68,15 @@
 
 **To use this tool, you need to install Git(>=2.25.1) first.**
 
-You can download the latest stable from [Releases](https://github.com/sourcegit-scm/sourcegit/releases/latest) or download workflow artifacts from [GitHub Actions](https://github.com/sourcegit-scm/sourcegit/actions) to try this app based on latest commits.
+You can download the latest custom build from [Releases](https://github.com/CreamelStudio/sourcegit-Custom/releases/latest) or download workflow artifacts from [GitHub Actions](https://github.com/CreamelStudio/sourcegit-Custom/actions) to try this app based on latest commits.
+
+### Custom build updates
+
+Install this fork's ZIP release once to enable its updater. With **Check for updates on startup** enabled, the app checks this repository at startup and every hour, and shows a notification for a newer stable release. You can also check manually from the application menu or skip a version.
+
+On Windows, **Update and Restart** downloads the matching x64/ARM64 package, verifies its SHA-256 checksum, replaces only the application files, and restarts SourceGit. Settings, portable `data`, and repositories are preserved. Failed file replacement or restart restores the previous files. Use a writable installation folder; other running SourceGit instances must be closed.
+
+On macOS and Linux, the update notification links to this fork's release downloads; install with the platform's normal method. Package-manager instructions below use their respective distribution channels.
 
 This software creates a folder, which is platform-dependent, to store user settings, downloaded avatars and crash logs.
 
@@ -90,7 +98,7 @@ For **Windows** users:
   scoop bucket add extras
   scoop install sourcegit
   ```
-* Pre-built binaries can be found in [Releases](https://github.com/sourcegit-scm/sourcegit/releases/latest)
+* Pre-built custom binaries can be found in [Releases](https://github.com/CreamelStudio/sourcegit-Custom/releases/latest)
 
 > [!NOTE]
 > `git-flow` is no longer shipped with **Git for Windows** since `2.51.1`. You can use it by following these steps:

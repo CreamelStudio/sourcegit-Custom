@@ -832,8 +832,10 @@
   <x:String x:Key="Text.SelfUpdate" xml:space="preserve">업데이트 확인...</x:String>
   <x:String x:Key="Text.SelfUpdate.Available" xml:space="preserve">이 소프트웨어의 새 버전을 사용할 수 있습니다: </x:String>
   <x:String x:Key="Text.SelfUpdate.CurrentVersion" xml:space="preserve">현재 버전:</x:String>
-  <x:String x:Key="Text.SelfUpdate.Error" xml:space="preserve">업데이트 확인 실패!</x:String>
+  <x:String x:Key="Text.SelfUpdate.Error" xml:space="preserve">업데이트에 실패했습니다.</x:String>
   <x:String x:Key="Text.SelfUpdate.GotoDownload" xml:space="preserve">다운로드</x:String>
+  <x:String x:Key="Text.SelfUpdate.InstallAndRestart" xml:space="preserve">업데이트 후 재시작</x:String>
+  <x:String x:Key="Text.SelfUpdate.Downloading" xml:space="preserve">업데이트를 다운로드하고 검증하고 있습니다. 준비되면 SourceGit이 다시 시작됩니다. 이 창을 닫으면 취소됩니다.</x:String>
   <x:String x:Key="Text.SelfUpdate.IgnoreThisVersion" xml:space="preserve">이 버전 건너뛰기</x:String>
   <x:String x:Key="Text.SelfUpdate.ReleaseDate" xml:space="preserve">새 버전 릴리스 날짜:</x:String>
   <x:String x:Key="Text.SelfUpdate.Title" xml:space="preserve">소프트웨어 업데이트</x:String>

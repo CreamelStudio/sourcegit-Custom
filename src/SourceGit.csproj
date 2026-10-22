@@ -39,6 +39,8 @@
 
   <ItemGroup>
     <AvaloniaResource Include="App.ico" />
+    <EmbeddedResource Include="Resources/Scripts/update-windows.ps1" />
+    <InternalsVisibleTo Include="SourceGit.UpdateChecks" />
     <AvaloniaResource Include="Resources/Fonts/*" />
     <AvaloniaResource Include="Resources/Grammars/*" />
     <AvaloniaResource Include="Resources/Images/*" />
