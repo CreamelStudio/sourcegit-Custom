@@ -132,7 +132,7 @@
             BorderBrush="{DynamicResource Brush.Border0}"
             CornerRadius="8">
       <Border CornerRadius="8" ClipToBounds="True">
-        <Grid RowDefinitions="Auto,*">
+        <Grid RowDefinitions="Auto,*,Auto">
           <!-- In-Progress Information Bar -->
           <Grid Grid.Row="0" Height="28" ColumnDefinitions="*,Auto,Auto,Auto" Background="{DynamicResource Brush.Conflict}" IsVisible="{Binding InProgressContext, Converter={x:Static ObjectConverters.IsNotNull}}">
             <ContentControl Grid.Column="0" Margin="8,0" Content="{Binding InProgressContext}">
@@ -813,21 +813,23 @@
                 <v:StashesPage DataContext="{Binding StashesPage, Mode=OneWay}"/>
               </Border>
 
-              <!-- Auto-Fetch Notification -->
-              <Border Padding="12" HorizontalAlignment="Center" VerticalAlignment="Center" Effect="drop-shadow(0 0 12 #A0000000)" IsVisible="{Binding IsAutoFetching}">
-                <Border Background="{DynamicResource Brush.Popup}" CornerRadius="6" BorderThickness="1" BorderBrush="{DynamicResource Brush.PopupBorder}">
-                  <StackPanel Orientation="Vertical" Margin="16,8">
-                    <TextBlock Text="{DynamicResource Text.Repository.AutoFetching}"/>
-                    <ProgressBar Margin="0,8,0,0"
-                                 HorizontalAlignment="Stretch"
-                                 IsIndeterminate="{Binding IsAutoFetching}"
-                                 Background="{DynamicResource Brush.FG2}" Foreground="{DynamicResource Brush.Accent}"
-                                 Minimum="0" Maximum="100"/>
-                  </StackPanel>
-                </Border>
-              </Border>
             </Grid>
           </Grid>
+          <Border Grid.Row="2" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource Brush.Border0}" Padding="10,3">
+            <Grid ColumnDefinitions="Auto,Auto,*,Auto" MinHeight="26">
+              <CheckBox Grid.Column="0" Content="{DynamicResource Text.RemoteCM.EnableAutoFetch}"
+                        IsChecked="{Binding Source={x:Static vm:Preferences.Instance}, Path=EnableAutoFetch, Mode=TwoWay}"/>
+              <v:LoadingIcon Grid.Column="1" Width="14" Height="14" Margin="12,0,0,0"
+                             IsVisible="{Binding IsAutoFetching}"/>
+              <TextBlock Grid.Column="2" Text="{Binding AutoFetchStatus}" Margin="12,0"
+                         VerticalAlignment="Center" Foreground="{DynamicResource Brush.FG2}" TextTrimming="CharacterEllipsis"
+                         ToolTip.Tip="{Binding AutoFetchStatus}"/>
+              <Button Grid.Column="3" Classes="icon_button" Width="26" Click="OnOpenFetchLogs"
+                      ToolTip.Tip="{DynamicResource Text.Repository.ViewLogs}">
+                <Path Width="14" Height="14" Data="{StaticResource Icons.Logs}"/>
+              </Button>
+            </Grid>
+          </Border>
         </Grid>
       </Border>
     </Border>

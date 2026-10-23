@@ -34,12 +34,39 @@ namespace SourceGit.Models
         {
             using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(15) };
             client.DefaultRequestHeaders.UserAgent.ParseAdd("SourceGit-Custom");
-            using var response = await client.GetAsync("https://api.github.com/repos/CreamelStudio/sourcegit-Custom/releases/latest");
+            // The legacy /latest release stays pinned so 2026.x clients can migrate to 1.0.0.
+            using var response = await client.GetAsync("https://api.github.com/repos/CreamelStudio/sourcegit-Custom/releases?per_page=100");
             if (response.StatusCode == HttpStatusCode.NotFound)
                 return null;
 
             response.EnsureSuccessStatusCode();
-            return JsonSerializer.Deserialize(await response.Content.ReadAsStringAsync(), JsonCodeGen.Default.Version);
+            var releases = JsonSerializer.Deserialize(await response.Content.ReadAsStringAsync(), JsonCodeGen.Default.ListVersion);
+            return SelectLatestRelease(releases);
+        }
+
+        internal static Version SelectLatestRelease(IEnumerable<Version> releases)
+        {
+            Version latest = null;
+            System.Version latestVersion = null;
+            if (releases == null)
+                return null;
+
+            // shortcut: Check 100 recent releases; paginate if backports can hide the newest stable release.
+            foreach (var release in releases)
+            {
+                if (release.IsDraft || release.IsPrerelease)
+                    continue;
+                var version = Version.ParseTag(release.TagName);
+                if (version == null || version.Major == 2026)
+                    continue;
+                if (latestVersion == null || version > latestVersion)
+                {
+                    latest = release;
+                    latestVersion = version;
+                }
+            }
+
+            return latest;
         }
 
         public static async Task InstallAsync(Version version, IProgress<double> progress, CancellationToken cancellationToken)

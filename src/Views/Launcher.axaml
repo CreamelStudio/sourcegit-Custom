@@ -34,7 +34,8 @@
                                   IsVisible="{OnPlatform False, macOS=True}"/>
 
       <!-- Menu (Windows/Linux) -->
-      <Button Grid.Column="0" Classes="icon_button" VerticalAlignment="Bottom" Margin="6,0,0,3" IsVisible="{OnPlatform True, macOS=False}">
+      <Button Grid.Column="0" Classes="icon_button" VerticalAlignment="Bottom" Margin="6,0,0,3" IsVisible="{OnPlatform True, macOS=False}"
+              ToolTip.Tip="{DynamicResource Text.App.Menu}" AutomationProperties.Name="{DynamicResource Text.App.Menu}">
         <Button.Flyout>
           <MenuFlyout Placement="BottomEdgeAlignedLeft" VerticalOffset="-6">
             <MenuItem Header="{DynamicResource Text.Preferences}" Command="{x:Static s:App.OpenPreferencesCommand}" InputGesture="Ctrl+,">
@@ -84,7 +85,10 @@
             </MenuItem>
           </MenuFlyout>
         </Button.Flyout>
-        <Path Width="12" Height="12" Data="{StaticResource Icons.Menu}"/>
+        <StackPanel Orientation="Horizontal" Spacing="4">
+          <Image Source="/App.ico" Width="20" Height="20"/>
+          <Path Width="8" Height="8" Data="{StaticResource Icons.Menu}"/>
+        </StackPanel>
       </Button>
 
       <!-- Workspace Dropdown Menu -->

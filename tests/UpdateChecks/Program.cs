@@ -16,8 +16,31 @@ static void Check(bool condition, string description)
 
 var current = new System.Version(2026, 22, 0, 0);
 Check(ReleaseVersion.IsNewer("v2026.22.1", current), "A patch release must be detected.");
+Check(ReleaseVersion.IsNewer("v1.0.0", current), "The new version scheme must supersede the old date-based versions.");
+var v1 = new System.Version(1, 0, 0, 0);
+Check(!ReleaseVersion.IsNewer("v1.0.0", v1), "Never offer the installed version again.");
+Check(ReleaseVersion.IsNewer("v1.0.1", v1), "A bug fix increments the patch version.");
+Check(ReleaseVersion.IsNewer("v1.1.0", new System.Version(1, 0, 9, 0)), "A feature increments the minor version.");
+Check(ReleaseVersion.IsNewer("v2.0.0", new System.Version(1, 99, 99, 0)), "A major redesign increments the major version.");
+Check(!ReleaseVersion.IsNewer("v2026.22.5", v1), "The migration alias must not cause an update loop after installing v1.");
 foreach (var tag in new[] { "v2026.22", "v2026.22.0.0", "v2026.21", "v2026.22.1-beta", "invalid", "", null })
     Check(!ReleaseVersion.IsNewer(tag, current), $"Not a newer stable version: {tag}");
+foreach (var tag in new[] { "v1.1", "v1.1.0.0", "v1.1.0-beta", "v1.1.0+build", "1.1.0" })
+    Check(!ReleaseVersion.IsNewer(tag, v1), $"Require a stable vMAJOR.MINOR.PATCH tag: {tag}");
+
+var releases = JsonSerializer.Deserialize("""
+    [
+      {"tag_name":"v2026.22.5"},
+      {"tag_name":"v1.1.1"},
+      {"tag_name":"v3.0.0","draft":true},
+      {"tag_name":"v4.0.0","prerelease":true},
+      {"tag_name":"v5.0.0-beta"},
+      {"tag_name":"v2.0.0"},
+      {"tag_name":"v1.9.0"}
+    ]
+    """, JsonCodeGen.Default.ListVersion)!;
+Check(SelfUpdater.SelectLatestRelease(releases)?.TagName == "v2.0.0", "Select the highest stable semantic version, ignoring legacy aliases, drafts and prereleases.");
+Check(SelfUpdater.SelectLatestRelease([new() { TagName = "v2026.22.5" }]) == null, "Do not fall back to the migration alias when no semantic releases are available.");
 
 var release = JsonSerializer.Deserialize("""
     {"tag_name":"v2026.22.1","published_at":"2026-10-22T02:30:00Z","assets":[
@@ -101,3 +124,12 @@ finally
 }
 
 Console.WriteLine("Update checks passed: versions, platform assets, installed release notes and persisted acknowledgement, safe ZIP paths, package size and SHA-256.");
+try
+{
+    await FetchChecks.RunAsync();
+}
+catch (Exception ex)
+{
+    Console.Error.WriteLine(ex);
+    Environment.ExitCode = 1;
+}

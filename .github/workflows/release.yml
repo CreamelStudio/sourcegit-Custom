@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - v*
+      - '!v2026.*'
 jobs:
   build:
     name: Build
@@ -51,5 +52,25 @@ jobs:
           TAG: ${{ github.ref_name }}
           VERSION: ${{ needs.version.outputs.version }}
         run: |
-          gh release create "$TAG" packages/* -t "$VERSION" --notes-from-tag --draft --verify-tag
-          gh release edit "$TAG" --draft=false --latest
+          gh release create "$TAG" packages/* -t "Release v$VERSION" --notes-from-tag --draft --verify-tag
+          # Keep /latest compatible with clients whose version comparison predates v1.0.0.
+          gh release edit "$TAG" --draft=false --latest=false
+      - name: Publish migration update for 2026.x clients
+        if: needs.version.outputs.version == '1.0.0'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TARGET: ${{ github.sha }}
+        run: |
+          mkdir migration
+          cp packages/sourcegit_1.0.0.win-x64.zip migration/sourcegit_2026.22.5.win-x64.zip
+          cp packages/sourcegit_1.0.0.win-arm64.zip migration/sourcegit_2026.22.5.win-arm64.zip
+          cat > migration-notes.md <<'EOF'
+          ## Release v1.0.0 자동 업데이트
+
+          이 항목은 기존 2026.22.x 앱이 v1.0.0으로 자동 업데이트할 수 있도록 제공하는 호환 릴리스입니다.
+          설치되는 앱 버전은 **v1.0.0**입니다. 표시되는 2026.22.5는 이전 앱을 위한 업데이트 식별자입니다.
+
+          [v1.0.0의 변경 내역과 전체 배포 파일](https://github.com/CreamelStudio/sourcegit-Custom/releases/tag/v1.0.0)
+          EOF
+          gh release create v2026.22.5 migration/* --target "$TARGET" -t "Release v1.0.0 (기존 버전 자동 업데이트)" --notes-file migration-notes.md --draft
+          gh release edit v2026.22.5 --draft=false --latest

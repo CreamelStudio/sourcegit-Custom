@@ -88,6 +88,13 @@ namespace SourceGit.Views
             UpdateLeftSidebarLayout();
         }
 
+        private async void OnOpenFetchLogs(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is ViewModels.Repository repo)
+                await this.ShowDialogAsync(new ViewModels.ViewLogs(repo));
+            e.Handled = true;
+        }
+
         private async void OnOpenConfigure(object sender, RoutedEventArgs e)
         {
             if (DataContext is ViewModels.Repository repo)

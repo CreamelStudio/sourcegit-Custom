@@ -243,7 +243,8 @@ namespace SourceGit.Native
                     if (!GenerateConsoleCtrlEvent(0, 0))
                         proc.Kill(true);
 
-                    proc.WaitForExit(2000);
+                    if (!proc.WaitForExit(2000))
+                        proc.Kill(true);
                 }
                 finally
                 {

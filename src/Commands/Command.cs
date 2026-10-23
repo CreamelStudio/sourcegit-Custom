@@ -35,10 +35,37 @@ namespace SourceGit.Commands
         // Only used in `ExecAsync` mode.
         public CancellationToken CancellationToken { get; set; } = CancellationToken.None;
         public bool RaiseError { get; set; } = true;
+        public bool AllowInteractiveAuthentication { get; set; } = true;
         public Models.ICommandLog Log { get; set; } = null;
 
         public async Task<bool> ExecAsync()
         {
+            if (CancellationToken.IsCancellationRequested)
+                return false;
+
+            if (this is Fetch or Pull or Push)
+            {
+                var commonDir = await new QueryGitCommonDir(WorkingDirectory).GetResultAsync().ConfigureAwait(false);
+                var scheduler = Models.FetchScheduler.ForRepository(string.IsNullOrEmpty(commonDir) ? WorkingDirectory : commonDir);
+                try
+                {
+                    using var operation = await scheduler.EnterRemoteOperationAsync(CancellationToken).ConfigureAwait(false);
+                    return await ExecCoreAsync().ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    return false;
+                }
+            }
+
+            return await ExecCoreAsync().ConfigureAwait(false);
+        }
+
+        private async Task<bool> ExecCoreAsync()
+        {
+            if (CancellationToken.IsCancellationRequested)
+                return false;
+
             Log?.AppendLine($"$ git {Args}\n");
 
             var errs = new List<string>();
@@ -52,19 +79,11 @@ namespace SourceGit.Commands
             var capturedLock = new object();
             try
             {
-                proc.Start();
-
-                // Not safe, please only use `CancellationToken` in readonly commands.
-                if (CancellationToken.CanBeCanceled)
+                lock (capturedLock)
                 {
-                    CancellationToken.Register(() =>
-                    {
-                        lock (capturedLock)
-                        {
-                            if (captured is { Process: { HasExited: false } })
-                                Native.OS.TerminateProcess(captured.Process);
-                        }
-                    });
+                    if (CancellationToken.IsCancellationRequested)
+                        return false;
+                    proc.Start();
                 }
             }
             catch (Exception e)
@@ -76,12 +95,23 @@ namespace SourceGit.Commands
                 return false;
             }
 
+            // Only use cancellation for commands which can safely be interrupted.
+            using var registration = CancellationToken.Register(() =>
+            {
+                lock (capturedLock)
+                {
+                    if (captured is { Process: { HasExited: false } })
+                        Native.OS.TerminateProcess(captured.Process);
+                }
+            });
+
             proc.BeginOutputReadLine();
             proc.BeginErrorReadLine();
 
             try
             {
-                await proc.WaitForExitAsync(CancellationToken).ConfigureAwait(false);
+                // Cancellation terminates the process; drain its output before releasing the repository lock.
+                await proc.WaitForExitAsync().ConfigureAwait(false);
             }
             catch (Exception e)
             {
@@ -107,7 +137,7 @@ namespace SourceGit.Commands
                 return false;
             }
 
-            return true;
+            return !CancellationToken.IsCancellationRequested;
         }
 
         protected Result ReadToEnd()
@@ -210,6 +240,18 @@ namespace SourceGit.Commands
             if (!start.Environment.ContainsKey("GIT_SSH_COMMAND") && !string.IsNullOrEmpty(SSHKey))
                 start.Environment.Add("GIT_SSH_COMMAND", $"ssh -i '{SSHKey}' -o AddKeysToAgent=yes");
 
+            if (!AllowInteractiveAuthentication)
+            {
+                start.Environment["GIT_ASKPASS"] = string.Empty;
+                start.Environment["GIT_TERMINAL_PROMPT"] = "0";
+                start.Environment["GCM_INTERACTIVE"] = "0";
+                start.Environment["SSH_ASKPASS_REQUIRE"] = "never";
+                if (!start.Environment.ContainsKey("GIT_SSH_COMMAND") && !start.Environment.ContainsKey("GIT_SSH"))
+                    start.Environment["GIT_SSH_COMMAND"] = "ssh -o BatchMode=yes";
+                else if (!string.IsNullOrEmpty(SSHKey) && !Environment.GetEnvironmentVariables().Contains("GIT_SSH_COMMAND"))
+                    start.Environment["GIT_SSH_COMMAND"] += " -o BatchMode=yes";
+            }
+
             // Force the C locale on Unix, so that git's output (including fatal errors) can always be parsed.
             if (!OperatingSystem.IsWindows())
             {
@@ -250,7 +292,8 @@ namespace SourceGit.Commands
                     return;
             }
 
-            errs.Add(line);
+            lock (errs)
+                errs.Add(line);
         }
 
         private class CapturedProcess

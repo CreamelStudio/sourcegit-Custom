@@ -20,6 +20,12 @@ namespace SourceGit.Models
         [JsonPropertyName("body")]
         public string Body { get; set; }
 
+        [JsonPropertyName("draft")]
+        public bool IsDraft { get; set; }
+
+        [JsonPropertyName("prerelease")]
+        public bool IsPrerelease { get; set; }
+
         [JsonPropertyName("assets")]
         public List<ReleaseAsset> Assets { get; set; } = [];
 
@@ -60,11 +66,25 @@ namespace SourceGit.Models
 
         internal static bool IsNewer(string tag, System.Version current)
         {
-            if (string.IsNullOrEmpty(tag) || !tag.StartsWith('v') || !System.Version.TryParse(tag.Substring(1), out var version))
+            var version = ParseTag(tag);
+            if (version == null)
                 return false;
 
-            version = new System.Version(version.Major, version.Minor, Math.Max(0, version.Build), Math.Max(0, version.Revision));
+            if (current.Major == 2026 && version.Major != 2026)
+                return true;
+            if (current.Major != 2026 && version.Major == 2026)
+                return false;
+
             return current.CompareTo(version) < 0;
+        }
+
+        internal static System.Version ParseTag(string tag)
+        {
+            if (string.IsNullOrEmpty(tag) || !tag.StartsWith('v') || !System.Version.TryParse(tag.Substring(1), out var version) ||
+                version.Build < 0 || version.Revision >= 0)
+                return null;
+
+            return new System.Version(version.Major, version.Minor, version.Build, 0);
         }
     }
 

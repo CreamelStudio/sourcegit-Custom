@@ -26,7 +26,8 @@ namespace SourceGit.Commands
             Context = repo;
             SSHKey = remote.PrivateSSHKey;
             RaiseError = false;
-            Args = $"fetch --progress --verbose {remote.Name}";
+            AllowInteractiveAuthentication = false;
+            Args = $"fetch --progress --verbose --prune {remote.Name}";
         }
 
         public Fetch(string repo, Models.Remote remote, Models.Branch remoteBranch, Models.Branch local)

@@ -800,6 +800,13 @@
   <x:String x:Key="Text.RenameBranch.Target" xml:space="preserve">Branch:</x:String>
   <x:String x:Key="Text.Repository.Abort" xml:space="preserve">ABORT</x:String>
   <x:String x:Key="Text.Repository.AutoFetching" xml:space="preserve">Auto fetching changes from remotes...</x:String>
+  <x:String x:Key="Text.App.Menu" xml:space="preserve">Application menu</x:String>
+  <x:String x:Key="Text.Repository.AutoFetch.Off" xml:space="preserve">Automatic fetch is off</x:String>
+  <x:String x:Key="Text.Repository.AutoFetch.NoRemote" xml:space="preserve">No remotes enabled for automatic fetch</x:String>
+  <x:String x:Key="Text.Repository.AutoFetch.Next" xml:space="preserve">Next fetch {0}</x:String>
+  <x:String x:Key="Text.Repository.AutoFetch.Last" xml:space="preserve">Last fetched {0} · Next {1}</x:String>
+  <x:String x:Key="Text.Repository.AutoFetch.Failed" xml:space="preserve">Fetch failed · Retry {0} · See logs for details</x:String>
+  <x:String x:Key="Text.Repository.AutoFetch.Waiting" xml:space="preserve">Waiting for a background fetch slot or repository operation</x:String>
   <x:String x:Key="Text.Repository.BranchSort" xml:space="preserve">Sort</x:String>
   <x:String x:Key="Text.Repository.BranchSort.ByCommitterDate" xml:space="preserve">By Committer Date</x:String>
   <x:String x:Key="Text.Repository.BranchSort.ByName" xml:space="preserve">By Name</x:String>
