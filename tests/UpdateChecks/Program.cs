@@ -42,6 +42,12 @@ var releases = JsonSerializer.Deserialize("""
 Check(SelfUpdater.SelectLatestRelease(releases)?.TagName == "v2.0.0", "Select the highest stable semantic version, ignoring legacy aliases, drafts and prereleases.");
 Check(SelfUpdater.SelectLatestRelease([new() { TagName = "v2026.22.5" }]) == null, "Do not fall back to the migration alias when no semantic releases are available.");
 
+if (OperatingSystem.IsWindows())
+{
+    Check(SourceGit.Native.Windows.RefreshExecutableIcon(Environment.ProcessPath), "Windows must accept an icon refresh for an existing executable.");
+    Check(!SourceGit.Native.Windows.RefreshExecutableIcon(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"), "missing.exe")), "Do not notify the Shell for missing executables.");
+}
+
 var release = JsonSerializer.Deserialize("""
     {"tag_name":"v2026.22.1","published_at":"2026-10-22T02:30:00Z","assets":[
         {"name":"sourcegit_2026.22.1.win-x64.zip","size":123,"digest":"sha256:abcd"},

@@ -41,9 +41,63 @@ namespace SourceGit.Native
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern bool FreeConsole();
 
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        private struct ShellFileInfo
+        {
+            public IntPtr Icon;
+            public int IconIndex;
+            public uint Attributes;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
+            public string DisplayName;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 80)]
+            public string TypeName;
+        }
+
+        [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
+        private static extern IntPtr SHGetFileInfoW(string path, uint attributes, out ShellFileInfo info, uint size, uint flags);
+
+        [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
+        private static extern void SHUpdateImageW(string path, int iconIndex, uint flags, int imageIndex);
+
+        [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
+        private static extern void SHChangeNotify(uint change, uint flags, string path, IntPtr unused);
+
+        [DllImport("ole32.dll")]
+        private static extern int CoInitializeEx(IntPtr reserved, uint flags);
+
+        [DllImport("ole32.dll")]
+        private static extern void CoUninitialize();
+
+        internal static bool RefreshExecutableIcon(string executable)
+        {
+            if (string.IsNullOrEmpty(executable) || !File.Exists(executable))
+                return false;
+
+            var initialized = CoInitializeEx(IntPtr.Zero, 0);
+            if (initialized < 0 && initialized != unchecked((int)0x80010106)) // Already initialized in another apartment.
+                return false;
+
+            try
+            {
+                if (SHGetFileInfoW(executable, 0, out var info, (uint)Marshal.SizeOf<ShellFileInfo>(), 0x4000) == IntPtr.Zero)
+                    return false;
+
+                // The first EXE icon group is ours; invalidate only its cached image, not Explorer's entire cache.
+                SHUpdateImageW(executable, 0, 0, info.IconIndex);
+                SHChangeNotify(0x2000, 0x3005, executable, IntPtr.Zero); // UPDATEITEM, PATHW | FLUSHNOWAIT.
+                return true;
+            }
+            finally
+            {
+                if (initialized >= 0)
+                    CoUninitialize();
+            }
+        }
+
         public void SetupApp(AppBuilder builder)
         {
-            // Do nothing for now.
+            if (string.Equals(Path.GetFileName(Environment.ProcessPath), "SourceGit.exe", StringComparison.OrdinalIgnoreCase))
+                RefreshExecutableIcon(Environment.ProcessPath);
         }
 
         public void SetupWindow(Window window)

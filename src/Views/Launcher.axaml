@@ -85,10 +85,7 @@
             </MenuItem>
           </MenuFlyout>
         </Button.Flyout>
-        <StackPanel Orientation="Horizontal" Spacing="4">
-          <Image Source="/App.ico" Width="20" Height="20"/>
-          <Path Width="8" Height="8" Data="{StaticResource Icons.Menu}"/>
-        </StackPanel>
+        <Image Source="/App.ico" Width="20" Height="20"/>
       </Button>
 
       <!-- Workspace Dropdown Menu -->
