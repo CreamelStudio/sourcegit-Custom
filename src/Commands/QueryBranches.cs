@@ -20,6 +20,7 @@ namespace SourceGit.Commands
 
         public async Task<List<Models.Branch>> GetResultAsync()
         {
+            await new Worktree(WorkingDirectory) { CancellationToken = CancellationToken }.ReadAllAsync().ConfigureAwait(false);
             var branches = new List<Models.Branch>();
             var rs = await ReadToEndAsync().ConfigureAwait(false);
             if (!rs.IsSuccess)

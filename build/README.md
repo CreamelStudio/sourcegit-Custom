@@ -43,6 +43,10 @@ dotnet run --project tests/UpdateChecks -c Release -p:DisableAOT=true
 powershell -NoProfile -File tests/UpdateChecks/windows.ps1
 ```
 
+## Missing worktrees
+
+Branch/worktree refresh and checkout, branch and worktree-add operations clean stale worktree registrations using Git's metadata-only prune. The batch is eligible only when every unlocked prunable entry is a missing folder on a ready fixed local drive with an attached branch. Existing folders, detached HEADs, inaccessible paths and removable/network drives defer automatic pruning; locked entries remain protected by Git. Branches and working files are never deleted by this cleanup. Parent and submodule repositories have separate registrations and are checked independently when opened. A manually moved worktree should be reconnected with `git worktree repair` before refreshing its original repository.
+
 ## How to build this project manually
 
 1. Make sure [.NET SDK 10](https://dotnet.microsoft.com/en-us/download) is installed on your machine.

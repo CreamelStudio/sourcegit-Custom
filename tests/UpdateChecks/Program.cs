@@ -141,6 +141,7 @@ Console.WriteLine("Update checks passed: versions, platform assets, installed re
 try
 {
     await FetchChecks.RunAsync();
+    await WorktreeChecks.RunAsync();
     await WorkspaceChecks.RunAsync();
 PresetChecks.CheckLauncher();
 }

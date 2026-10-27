@@ -66,6 +66,16 @@ namespace SourceGit.Commands
             if (CancellationToken.IsCancellationRequested)
                 return false;
 
+            if (this is Checkout or Branch || this is Worktree && Args.StartsWith("worktree add ", StringComparison.Ordinal))
+            {
+                try
+                {
+                    await new Worktree(WorkingDirectory) { Log = Log, CancellationToken = CancellationToken }
+                        .ReadAllAsync().ConfigureAwait(false);
+                }
+                catch (OperationCanceledException) { return false; }
+            }
+
             if (this is Checkout or Rebase or InteractiveRebase or Merge or CherryPick or Revert or Pull ||
                 this is Reset && !Args.Contains("--pathspec-from-file", StringComparison.Ordinal))
             {

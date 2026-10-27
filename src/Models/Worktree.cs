@@ -8,5 +8,6 @@ namespace SourceGit.Models
         public bool IsBare { get; set; } = false;
         public bool IsDetached { get; set; } = false;
         public bool IsLocked { get; set; } = false;
+        public bool IsPrunable { get; set; } = false;
     }
 }
