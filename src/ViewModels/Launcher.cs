@@ -15,6 +15,13 @@ namespace SourceGit.ViewModels
 {
     public class Launcher : ObservableObject
     {
+        public int BackgroundTaskCount
+        {
+            get => _backgroundTaskCount;
+            set => SetProperty(ref _backgroundTaskCount, value);
+        }
+
+        private int _backgroundTaskCount;
         public string Title
         {
             get => _title;

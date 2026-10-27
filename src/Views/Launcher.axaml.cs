@@ -10,6 +10,7 @@ namespace SourceGit.Views
 {
     public partial class Launcher : ChromelessWindow
     {
+        private void OpenRepositoryTools(object sender, RoutedEventArgs e) => App.OpenRepositoryTools();
         public static readonly DirectProperty<Launcher, GridLength> CaptionHeightProperty =
             AvaloniaProperty.RegisterDirect<Launcher, GridLength>(
                 nameof(CaptionHeight),

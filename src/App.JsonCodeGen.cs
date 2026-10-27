@@ -73,6 +73,10 @@ namespace SourceGit
     [JsonSerializable(typeof(List<Models.LFSLock>))]
     [JsonSerializable(typeof(List<Models.VisualStudioInstance>))]
     [JsonSerializable(typeof(ViewModels.Preferences))]
+    [JsonSerializable(typeof(Models.BackgroundCloneRequest))]
+    [JsonSerializable(typeof(Models.BackgroundTaskState))]
+    [JsonSerializable(typeof(Models.BackgroundFetchSettings))]
+    [JsonSerializable(typeof(string))]
     [JsonSerializable(typeof(ViewModels.RepositoryNodeMinimalInfo))]
     internal partial class JsonCodeGen : JsonSerializerContext { }
 }

@@ -21,6 +21,8 @@ namespace SourceGit.ViewModels
             get;
         }
 
+        internal string CommonDirectory => _gitCommonDir;
+
         public string FullPath
         {
             get;
@@ -487,6 +489,8 @@ namespace SourceGit.ViewModels
             _autoFetchLifetime = new CancellationTokenSource();
             Preferences.Instance.PropertyChanged += OnAutoFetchPreferenceChanged;
             _autoFetchTimer = new Timer(AutoFetchByTimer, null, 5000, 5000);
+            if (App.Current != null && Preferences.Instance.EnableBackgroundFetch)
+                _ = BackgroundActivity.ConfigureAsync([FullPath]);
             UpdateAutoFetchStatus();
             RefreshAll();
         }
@@ -1938,6 +1942,17 @@ namespace SourceGit.ViewModels
 
         private async Task AutoFetchOnUIThread()
         {
+            if (Preferences.Instance.EnableBackgroundFetch)
+            {
+                var state = await Task.Run(() => Models.BackgroundTasks.Read(Models.BackgroundTasks.StatePath(Models.BackgroundTasks.FetchId(_gitCommonDir)), JsonCodeGen.Default.BackgroundTaskState));
+                if (state != null)
+                {
+                    IsAutoFetching = state.Status == Models.BackgroundTaskStatus.Running;
+                    if (state.Status == Models.BackgroundTaskStatus.Succeeded) _fetchScheduler.MarkFetched(state.UpdatedAt);
+                    else if (state.Status == Models.BackgroundTaskStatus.Failed) _fetchScheduler.MarkFailed(state.UpdatedAt);
+                }
+                return;
+            }
             if (!CanAutoFetch() || _fetchScheduler.NextFetchAt(Preferences.Instance.AutoFetchInterval) > DateTimeOffset.UtcNow)
                 return;
 
@@ -2011,7 +2026,7 @@ namespace SourceGit.ViewModels
 
         private void OnAutoFetchPreferenceChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName is not (nameof(Preferences.EnableAutoFetch) or nameof(Preferences.AutoFetchInterval) or nameof(Preferences.Locale)))
+            if (e.PropertyName is not (nameof(Preferences.EnableAutoFetch) or nameof(Preferences.EnableBackgroundFetch) or nameof(Preferences.AutoFetchInterval) or nameof(Preferences.Locale)))
                 return;
 
             if (!Preferences.Instance.EnableAutoFetch)

@@ -19,9 +19,9 @@
     </Grid.RowDefinitions>
 
     <!-- Custom TitleBar -->
-    <Grid Grid.Row="0" ColumnDefinitions="Auto,32,32,*,Auto,Auto">
+    <Grid Grid.Row="0" ColumnDefinitions="Auto,32,32,*,Auto,Auto,Auto">
       <!-- Bottom border -->
-      <Border Grid.Column="0" Grid.ColumnSpan="6"
+      <Border Grid.Column="0" Grid.ColumnSpan="7"
               BorderThickness="0,0,0,1" BorderBrush="{DynamicResource Brush.Border0}"
               Background="{DynamicResource Brush.TitleBar}"
               DoubleTapped="MaximizeOrRestoreWindow"
@@ -126,7 +126,14 @@
       <v:LauncherTabBar Grid.Column="3" Height="30" Margin="0,0,16,0" VerticalAlignment="Bottom"/>
 
       <!-- Update Available Button -->
-      <Button Grid.Column="4"
+      <Button Grid.Column="4" Classes="icon_button" Height="30" Click="OpenRepositoryTools"
+              ToolTip.Tip="{DynamicResource Text.RepositoryTools}" AutomationProperties.Name="{DynamicResource Text.RepositoryTools}">
+        <StackPanel Orientation="Horizontal" Spacing="4" Margin="6,0">
+          <Path Width="14" Height="14" Data="{StaticResource Icons.Tool}"/>
+          <TextBlock Text="{Binding BackgroundTaskCount}" FontSize="11"/>
+        </StackPanel>
+      </Button>
+      <Button Grid.Column="5"
               Classes="icon_button"
               Height="30"
               Margin="0,0,4,0"
@@ -138,7 +145,7 @@
       </Button>
 
       <!-- Caption Buttons (Windows/Linux) -->
-      <Border Grid.Column="5" IsVisible="{Binding #ThisControl.HasRightCaptionButton}">
+      <Border Grid.Column="6" IsVisible="{Binding #ThisControl.HasRightCaptionButton}">
         <v:CaptionButtons Height="30" VerticalAlignment="Top"/>
       </Border>
     </Grid>

@@ -11,7 +11,7 @@ namespace SourceGit.Models
         public static FetchScheduler ForRepository(string commonDir)
         {
             var key = Path.TrimEndingDirectorySeparator(Path.GetFullPath(commonDir));
-            return _repositories.GetOrAdd(key, _ => new FetchScheduler(DateTimeOffset.UtcNow));
+            return _repositories.GetOrAdd(key, _ => new FetchScheduler(DateTimeOffset.UtcNow) { _processLock = ProcessFileLock.RepositoryPath(key) });
         }
 
         internal FetchScheduler(DateTimeOffset openedAt)
@@ -26,6 +26,18 @@ namespace SourceGit.Models
         {
             lock (_stateLock)
             {
+                if (_processLock != null && File.Exists(_processLock + ".fetched"))
+                {
+                    try
+                    {
+                        if (long.TryParse(File.ReadAllText(_processLock + ".fetched"), out var ticks) && ticks >= 0 && ticks <= DateTimeOffset.MaxValue.UtcTicks)
+                        {
+                            var shared = new DateTimeOffset(ticks, TimeSpan.Zero);
+                            if (!_lastSuccess.HasValue || shared > _lastSuccess) { _lastSuccess = shared; _lastFailure = null; }
+                        }
+                    }
+                    catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+                }
                 if (_lastFailure.HasValue)
                     return _lastFailure.Value.AddMinutes(1);
                 return _lastSuccess?.AddMinutes(Math.Clamp(interval, 1, 60)) ?? _openedAt.AddMinutes(1);
@@ -36,15 +48,21 @@ namespace SourceGit.Models
         {
             lock (_stateLock)
             {
+                if (_lastSuccess.HasValue && now <= _lastSuccess.Value) return;
                 _lastSuccess = now;
                 _lastFailure = null;
+                if (_processLock != null)
+                {
+                    try { Directory.CreateDirectory(Path.GetDirectoryName(_processLock)!); File.WriteAllText(_processLock + ".fetched", now.UtcTicks.ToString()); }
+                    catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+                }
             }
         }
 
         public void MarkFailed(DateTimeOffset now)
         {
             lock (_stateLock)
-                _lastFailure = now;
+                if (!_lastSuccess.HasValue || now > _lastSuccess.Value) _lastFailure = now;
         }
 
         public async Task<IDisposable> TryEnterAutomaticAsync(CancellationToken token)
@@ -84,7 +102,16 @@ namespace SourceGit.Models
         public async Task<IDisposable> EnterRemoteOperationAsync(CancellationToken token)
         {
             await _remoteOperation.WaitAsync(token).ConfigureAwait(false);
-            return new Lease(() => _remoteOperation.Release());
+            try
+            {
+                var processLock = _processLock == null ? null : await ProcessFileLock.EnterAsync(_processLock, token).ConfigureAwait(false);
+                return new Lease(() => { processLock?.Dispose(); _remoteOperation.Release(); });
+            }
+            catch
+            {
+                _remoteOperation.Release();
+                throw;
+            }
         }
 
         private sealed class Lease(Action release) : IDisposable
@@ -102,5 +129,6 @@ namespace SourceGit.Models
         private DateTimeOffset? _lastSuccess;
         private DateTimeOffset? _lastFailure;
         private int _automaticPending;
+        private string _processLock;
     }
 }

@@ -36,7 +36,9 @@ namespace SourceGit
 
             try
             {
-                if (TryLaunchAsRebaseTodoEditor(args, out int exitTodo))
+                if (args.Length == 2 && args[0] == "--background-worker")
+                    Models.BackgroundTasks.RunAsync(args[1]).GetAwaiter().GetResult();
+                else if (TryLaunchAsRebaseTodoEditor(args, out int exitTodo))
                     Environment.Exit(exitTodo);
                 else if (TryLaunchAsRebaseMessageEditor(args, out int exitMessage))
                     Environment.Exit(exitMessage);
@@ -233,6 +235,27 @@ namespace SourceGit
             else
                 Environment.Exit(exitCode);
         }
+
+        public static void OpenRepositoryTools(int tab = 0)
+        {
+            if (Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime { MainWindow: { } owner }) return;
+            if (_repositoryTools != null)
+            {
+                if (_repositoryTools.DataContext is ViewModels.RepositoryTools existing)
+                {
+                    existing.TabIndex = tab;
+                    _ = existing.RefreshScopeAsync(GetLauncher());
+                }
+                _repositoryTools.Activate();
+                return;
+            }
+            var window = new Views.RepositoryTools { DataContext = new ViewModels.RepositoryTools(GetLauncher(), tab) };
+            _repositoryTools = window;
+            window.Closed += (_, _) => _repositoryTools = null;
+            window.Show(owner);
+        }
+
+        private static Views.RepositoryTools _repositoryTools;
         #endregion
 
         #region Overrides
@@ -529,6 +552,7 @@ namespace SourceGit
 
             desktop.MainWindow.Opened += async (_, _) =>
             {
+                ViewModels.BackgroundActivity.Start();
                 _checkingForUpdate = true;
                 try
                 {

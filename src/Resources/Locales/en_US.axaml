@@ -1121,4 +1121,36 @@
   <x:String x:Key="Text.Worktree.Remove" xml:space="preserve">Remove</x:String>
   <x:String x:Key="Text.Worktree.Unlock" xml:space="preserve">Unlock</x:String>
   <x:String x:Key="Text.Yes" xml:space="preserve">YES</x:String>
+  <x:String x:Key="Text.RepositoryTools">Repository tools</x:String>
+  <x:String x:Key="Text.RepositoryTools.Refresh">Refresh</x:String>
+  <x:String x:Key="Text.RepositoryTools.Open">Open</x:String>
+  <x:String x:Key="Text.Recovery.Title">Recovery timeline</x:String>
+  <x:String x:Key="Text.Recovery.Hint">Recovery points preserve committed history, not uncommitted or untracked files. Creating a recovery branch does not change your current files.</x:String>
+  <x:String x:Key="Text.Recovery.CreateBranch">Create recovery branch</x:String>
+  <x:String x:Key="Text.Recovery.Count">{0} recovery points</x:String>
+  <x:String x:Key="Text.Recovery.Created">Created {0}. Your current branch and files are unchanged.</x:String>
+  <x:String x:Key="Text.WorkspaceSearch.Title">Workspace search</x:String>
+  <x:String x:Key="Text.WorkspaceSearch.Commits">Commit messages</x:String>
+  <x:String x:Key="Text.WorkspaceSearch.Files">File names</x:String>
+  <x:String x:Key="Text.WorkspaceSearch.Text">File contents</x:String>
+  <x:String x:Key="Text.WorkspaceSearch.Query">Enter a search term</x:String>
+  <x:String x:Key="Text.WorkspaceSearch.Search">Search</x:String>
+  <x:String x:Key="Text.WorkspaceSearch.Searching">Searching…</x:String>
+  <x:String x:Key="Text.WorkspaceSearch.Hint">Search selected repositories and initialized submodules from the current preset or workspace. Double-click a result to open it. Text search covers tracked text files.</x:String>
+  <x:String x:Key="Text.WorkspaceSearch.Scope">{0} repositories available</x:String>
+  <x:String x:Key="Text.WorkspaceSearch.Count">{0} results</x:String>
+  <x:String x:Key="Text.WorkspaceSearch.Limited">{0} results. Limit reached; narrow your search.</x:String>
+  <x:String x:Key="Text.Background.Title">Background tasks</x:String>
+  <x:String x:Key="Text.Background.Fetch">Continue automatic Fetch after closing the app</x:String>
+  <x:String x:Key="Text.Background.Hint">Clones continue after closing or updating the app. Fetch uses your automatic Fetch setting and interval. Authentication must already be available; failed or cancelled folders are kept.</x:String>
+  <x:String x:Key="Text.Background.Repositories">Repositories scheduled for background Fetch</x:String>
+  <x:String x:Key="Text.Background.Remove">Remove from schedule</x:String>
+  <x:String x:Key="Text.Background.Queuing">Starting background clone…</x:String>
+  <x:String x:Key="Text.Background.CloneDone">Clone completed: {0}. Open it from Background tasks.</x:String>
+  <x:String x:Key="Text.Background.Status.Queued">Queued</x:String>
+  <x:String x:Key="Text.Background.Status.Running">Running</x:String>
+  <x:String x:Key="Text.Background.Status.Succeeded">Completed</x:String>
+  <x:String x:Key="Text.Background.Status.Failed">Failed</x:String>
+  <x:String x:Key="Text.Background.Status.Cancelled">Cancelled</x:String>
+  <x:String x:Key="Text.Background.Status.Interrupted">Interrupted</x:String>
 </ResourceDictionary>

@@ -266,6 +266,12 @@ namespace SourceGit.ViewModels
             set => SetProperty(ref _autoFetchInterval, Math.Clamp(value, 1, 60));
         }
 
+        public bool EnableBackgroundFetch
+        {
+            get => _enableBackgroundFetch;
+            set => SetProperty(ref _enableBackgroundFetch, value);
+        }
+
         public bool IgnoreWhitespaceChangesInDiff
         {
             get => _ignoreWhitespaceChangesInDiff;
@@ -831,6 +837,7 @@ namespace SourceGit.ViewModels
         private bool _isLoading = true;
         private int _activePresetSlot;
         private bool _enableAutoFetch = true;
+        private bool _enableBackgroundFetch = true;
         private int _autoFetchInterval = 10;
         private bool _isReadonly = true;
         private string _locale = "en_US";

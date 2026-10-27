@@ -1,0 +1,109 @@
+<v:ChromelessWindow xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:v="using:SourceGit.Views"
+                    xmlns:vm="using:SourceGit.ViewModels"
+                    xmlns:m="using:SourceGit.Models"
+                    x:Class="SourceGit.Views.RepositoryTools"
+                    x:DataType="vm:RepositoryTools" x:Name="ThisControl"
+                    Title="{DynamicResource Text.RepositoryTools}" Icon="/App.ico"
+                    Width="1000" Height="680" MinWidth="760" MinHeight="500"
+                    WindowStartupLocation="CenterOwner">
+  <Grid RowDefinitions="Auto,*">
+    <Grid Height="30" IsVisible="{Binding !#ThisControl.UseSystemWindowFrame}">
+      <Border Background="{DynamicResource Brush.TitleBar}" DoubleTapped="MaximizeOrRestoreWindow" PointerPressed="BeginMoveWindow"/>
+      <TextBlock Text="{DynamicResource Text.RepositoryTools}" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False"/>
+      <v:CaptionButtons HorizontalAlignment="Right" IsCloseButtonOnly="True"/>
+    </Grid>
+    <TabControl Grid.Row="1" Margin="12" SelectedIndex="{Binding TabIndex, Mode=TwoWay}">
+      <TabItem Header="{DynamicResource Text.Recovery.Title}">
+        <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="0,10,0,0" RowSpacing="8">
+          <Grid ColumnDefinitions="*,Auto">
+            <ComboBox ItemsSource="{Binding Repositories}" SelectedItem="{Binding RecoveryRepository, Mode=TwoWay}" HorizontalAlignment="Stretch">
+              <ComboBox.ItemTemplate><DataTemplate x:DataType="vm:SearchRepository"><TextBlock Text="{Binding Path}"/></DataTemplate></ComboBox.ItemTemplate>
+            </ComboBox>
+            <Button Grid.Column="1" Margin="8,0,0,0" Content="{DynamicResource Text.RepositoryTools.Refresh}" Click="RefreshRecovery"/>
+          </Grid>
+          <TextBlock Grid.Row="1" Text="{DynamicResource Text.Recovery.Hint}" TextWrapping="Wrap" Foreground="{DynamicResource Brush.FG2}"/>
+          <ListBox Grid.Row="2" ItemsSource="{Binding RecoveryPoints}" SelectedItem="{Binding SelectedRecoveryPoint, Mode=TwoWay}">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="m:RecoveryPoint">
+                <Grid ColumnDefinitions="150,95,*" RowDefinitions="Auto,Auto" Margin="4">
+                  <TextBlock Text="{Binding LocalTime}"/>
+                  <TextBlock Grid.Column="1" Text="{Binding ShortSHA}"/>
+                  <TextBlock Grid.Column="2" Text="{Binding Description}" TextTrimming="CharacterEllipsis"/>
+                  <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding Source}" FontSize="11" Foreground="{DynamicResource Brush.FG2}"/>
+                </Grid>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+          <Grid Grid.Row="3" ColumnDefinitions="*,Auto">
+            <TextBlock Text="{Binding RecoveryStatus}" TextWrapping="Wrap" VerticalAlignment="Center"/>
+            <Button Grid.Column="1" Content="{DynamicResource Text.Recovery.CreateBranch}" Click="CreateRecoveryBranch"/>
+          </Grid>
+        </Grid>
+      </TabItem>
+      <TabItem Header="{DynamicResource Text.WorkspaceSearch.Title}">
+        <Grid RowDefinitions="Auto,Auto,*,Auto" ColumnDefinitions="210,*" Margin="0,10,0,0" RowSpacing="8" ColumnSpacing="8">
+          <Grid Grid.ColumnSpan="2" ColumnDefinitions="140,*,Auto,Auto" ColumnSpacing="8">
+            <ComboBox ItemsSource="{Binding SearchKinds}" SelectedIndex="{Binding SearchKind, Mode=TwoWay}"/>
+            <TextBox Grid.Column="1" Text="{Binding Query, Mode=TwoWay}" Watermark="{DynamicResource Text.WorkspaceSearch.Query}" KeyDown="SearchKeyDown"/>
+            <Button Grid.Column="2" Content="{DynamicResource Text.WorkspaceSearch.Search}" Click="Search" IsEnabled="{Binding !IsBusy}"/>
+            <Button Grid.Column="3" Content="{DynamicResource Text.Cancel}" Click="CancelSearch" IsEnabled="{Binding IsBusy}"/>
+          </Grid>
+          <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Text="{DynamicResource Text.WorkspaceSearch.Hint}" TextWrapping="Wrap" Foreground="{DynamicResource Brush.FG2}"/>
+          <ListBox Grid.Row="2" ItemsSource="{Binding Repositories}">
+            <ListBox.ItemTemplate><DataTemplate x:DataType="vm:SearchRepository">
+              <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}" Content="{Binding Path}" ToolTip.Tip="{Binding Path}"/>
+            </DataTemplate></ListBox.ItemTemplate>
+          </ListBox>
+          <ListBox Grid.Row="2" Grid.Column="1" ItemsSource="{Binding Hits}" SelectedItem="{Binding SelectedHit, Mode=TwoWay}" DoubleTapped="OpenHit">
+            <ListBox.ItemTemplate><DataTemplate x:DataType="m:WorkspaceSearchHit">
+              <StackPanel Margin="4" ToolTip.Tip="{Binding Repository}">
+                <Grid ColumnDefinitions="*,Auto">
+                  <TextBlock Text="{Binding Location}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                  <TextBlock Grid.Column="1" Margin="8,0,0,0" Text="{Binding RepositoryName}" Foreground="{DynamicResource Brush.FG2}"/>
+                </Grid>
+                <TextBlock Text="{Binding Text}" TextTrimming="CharacterEllipsis"/>
+                <TextBlock Text="{Binding LineText}" FontSize="11" Foreground="{DynamicResource Brush.FG2}"/>
+              </StackPanel>
+            </DataTemplate></ListBox.ItemTemplate>
+          </ListBox>
+          <Grid Grid.Row="3" Grid.ColumnSpan="2" ColumnDefinitions="*,Auto">
+            <TextBlock Text="{Binding Status}" TextWrapping="Wrap"/>
+            <Button Grid.Column="1" Content="{DynamicResource Text.RepositoryTools.Open}" Click="OpenHitButton"/>
+          </Grid>
+        </Grid>
+      </TabItem>
+      <TabItem Header="{DynamicResource Text.Background.Title}">
+        <Grid RowDefinitions="Auto,Auto,*,Auto,120" Margin="0,10,0,0" RowSpacing="8">
+          <Grid ColumnDefinitions="*,Auto">
+            <CheckBox Content="{DynamicResource Text.Background.Fetch}" IsChecked="{Binding Source={x:Static vm:Preferences.Instance}, Path=EnableBackgroundFetch, Mode=TwoWay}"/>
+            <Button Grid.Column="1" Content="{DynamicResource Text.RepositoryTools.Refresh}" Click="RefreshJobs"/>
+          </Grid>
+          <TextBlock Grid.Row="1" Text="{DynamicResource Text.Background.Hint}" TextWrapping="Wrap" Foreground="{DynamicResource Brush.FG2}"/>
+          <ListBox Grid.Row="2" ItemsSource="{Binding Jobs}">
+            <ListBox.ItemTemplate><DataTemplate x:DataType="m:BackgroundTaskState">
+              <Grid ColumnDefinitions="*,Auto,Auto" RowDefinitions="Auto,Auto,Auto" Margin="4" ColumnSpacing="8">
+                <TextBlock Text="{Binding Repository}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Repository}"/>
+                <Button Grid.Column="1" Content="{DynamicResource Text.RepositoryTools.Open}" Tag="{Binding}" Click="OpenJob" IsEnabled="{Binding !IsActive}"/>
+                <Button Grid.Column="2" Content="{DynamicResource Text.Cancel}" Tag="{Binding}" Click="CancelJob" IsEnabled="{Binding IsActive}"/>
+                <StackPanel Grid.Row="1" Grid.ColumnSpan="3" Orientation="Horizontal" Spacing="10">
+                  <TextBlock Text="{Binding Kind}"/><TextBlock Text="{Binding StatusText}"/><TextBlock Text="{Binding LocalTime}"/>
+                </StackPanel>
+                <TextBlock Grid.Row="2" Grid.ColumnSpan="3" Text="{Binding Detail}" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource Brush.FG2}" ToolTip.Tip="{Binding Detail}"/>
+              </Grid>
+            </DataTemplate></ListBox.ItemTemplate>
+          </ListBox>
+          <TextBlock Grid.Row="3" Text="{DynamicResource Text.Background.Repositories}"/>
+          <ListBox Grid.Row="4" ItemsSource="{Binding ScheduledRepositories}">
+            <ListBox.ItemTemplate><DataTemplate x:DataType="x:String">
+              <Grid ColumnDefinitions="*,Auto" Margin="4"><TextBlock Text="{Binding}" TextTrimming="CharacterEllipsis"/>
+                <Button Grid.Column="1" Content="{DynamicResource Text.Background.Remove}" Tag="{Binding}" Click="RemoveScheduledRepository"/>
+              </Grid>
+            </DataTemplate></ListBox.ItemTemplate>
+          </ListBox>
+        </Grid>
+      </TabItem>
+    </TabControl>
+  </Grid>
+</v:ChromelessWindow>

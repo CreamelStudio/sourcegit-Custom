@@ -66,6 +66,18 @@ namespace SourceGit.Commands
             if (CancellationToken.IsCancellationRequested)
                 return false;
 
+            if (this is Checkout or Rebase or InteractiveRebase or Merge or CherryPick or Revert or Pull ||
+                this is Reset && !Args.Contains("--pathspec-from-file", StringComparison.Ordinal))
+            {
+                try { await Models.RecoveryTimeline.CaptureAsync(WorkingDirectory, GetType().Name.ToLowerInvariant()).ConfigureAwait(false); }
+                catch (Exception ex)
+                {
+                    if (RaiseError)
+                        RaiseException($"Could not preserve the recovery commit: {ex.Message}");
+                    return false;
+                }
+            }
+
             Log?.AppendLine($"$ git {Args}\n");
 
             var errs = new List<string>();

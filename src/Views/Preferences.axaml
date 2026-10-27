@@ -316,7 +316,7 @@
             <TextBlock Classes="tab_header" Text="{DynamicResource Text.Preferences.Git}"/>
           </TabItem.Header>
 
-          <Grid Margin="8" RowDefinitions="32,32,32,32,32,32,32,32,Auto,32,32" ColumnDefinitions="Auto,*">
+          <Grid Margin="8" RowDefinitions="32,32,32,32,32,32,32,32,Auto,32,32,Auto" ColumnDefinitions="Auto,*">
             <TextBlock Grid.Row="0" Grid.Column="0"
                        Text="{DynamicResource Text.Preferences.Git.Path}"
                        HorizontalAlignment="Right"
@@ -437,6 +437,9 @@
                          Margin="5,0,0,0"
                          Text="{DynamicResource Text.Configure.Git.AutoFetchIntervalSuffix}" />
             </StackPanel>
+            <CheckBox Grid.Row="11" Grid.Column="1" Margin="0,4,0,0"
+                      Content="{DynamicResource Text.Background.Fetch}"
+                      IsChecked="{Binding EnableBackgroundFetch, Mode=TwoWay}"/>
           </Grid>
         </TabItem>
 

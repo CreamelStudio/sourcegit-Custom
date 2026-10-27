@@ -1,8 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace SourceGit.ViewModels
@@ -87,7 +86,7 @@ namespace SourceGit.ViewModels
         public Clone(string pageId)
         {
             _pageId = pageId;
-            CanTerminate = true;
+            CanTerminate = false;
 
             Groups = new List<TargetGroup>();
             Groups.Add(new TargetGroup(string.Empty, "Auto", "Based-on Default Clone Dir"));
@@ -118,108 +117,43 @@ namespace SourceGit.ViewModels
 
         public override async Task<bool> Sure()
         {
-            ProgressDescription = "Clone ...";
-
-            var log = new CommandLog("Clone");
-            Use(log);
-
-            _cancellation = new CancellationTokenSource();
-            var token = _cancellation.Token;
-
-            var succ = await new Commands.Clone(_pageId, _parentFolder, _remote, _local, _useSSH ? _sshKey : "", _extraArgs)
-                .WithCancellation(token)
-                .Use(log)
-                .ExecAsync();
-            if (!succ || token.IsCancellationRequested)
-                return false;
-
-            var path = _parentFolder;
-            if (!string.IsNullOrEmpty(_local))
-            {
-                path = Path.GetFullPath(Path.Combine(path, _local));
-            }
-            else
-            {
-                var name = Path.GetFileName(_remote)!;
-                if (name.EndsWith(".git", StringComparison.Ordinal))
-                    name = name.Substring(0, name.Length - 4);
-                else if (name.EndsWith(".bundle", StringComparison.Ordinal))
-                    name = name.Substring(0, name.Length - 7);
-
-                path = Path.GetFullPath(Path.Combine(path, name));
-            }
-
-            if (!Directory.Exists(path))
-            {
-                Models.Notification.Send(_pageId, $"Folder '{path}' can NOT be found", true);
-                return false;
-            }
-
-            if (_useSSH && !string.IsNullOrEmpty(_sshKey))
-            {
-                await new Commands.Config(path)
-                    .Use(log)
-                    .SetAsync("remote.origin.sshkey", _sshKey);
-            }
-
-            if (InitAndUpdateSubmodules && !token.IsCancellationRequested)
-            {
-                var submodules = await new Commands.QueryUpdatableSubmodules(path, true).GetResultAsync();
-                if (submodules.Count > 0)
-                    await new Commands.Submodule(path)
-                        .WithCancellation(token)
-                        .Use(log)
-                        .UpdateAsync(submodules, true, true, false);
-            }
-
-            log.Complete();
-
+            ProgressDescription = App.Text("Background.Queuing");
             RepositoryNode parent = null;
-            if (_selectedGroupIndex == 0) // Auto (Based-on Default Clone Dir)
+            if (_selectedGroupIndex == 0 && !string.IsNullOrEmpty(_defaultCloneDir))
             {
-                if (!string.IsNullOrEmpty(_defaultCloneDir))
-                {
-                    var normalizedDefaultCloneDir = _defaultCloneDir.Replace('\\', '/').TrimEnd('/') + "/";
-                    var normalizedParentFolder = _parentFolder.Replace('\\', '/').TrimEnd('/') + "/";
-                    if (normalizedParentFolder.Length > normalizedDefaultCloneDir.Length &&
-                        normalizedParentFolder.StartsWith(normalizedDefaultCloneDir, StringComparison.Ordinal))
-                    {
-                        var relativePath = normalizedParentFolder.Substring(normalizedDefaultCloneDir.Length);
-                        parent = Preferences.Instance.FindOrCreateGroupRecursive(relativePath.TrimEnd('/'));
-                    }
-                }
+                var baseDir = _defaultCloneDir.Replace('\\', '/').TrimEnd('/') + "/";
+                var targetDir = _parentFolder.Replace('\\', '/').TrimEnd('/') + "/";
+                if (targetDir.Length > baseDir.Length && targetDir.StartsWith(baseDir, StringComparison.OrdinalIgnoreCase))
+                    parent = Preferences.Instance.FindOrCreateGroupRecursive(targetDir[baseDir.Length..].TrimEnd('/'));
             }
-            else if (_selectedGroupIndex > 0 && _selectedGroupIndex < Groups.Count) // Existing group
-            {
+            else if (_selectedGroupIndex > 0 && _selectedGroupIndex < Groups.Count)
                 parent = Preferences.Instance.FindNode(Groups[_selectedGroupIndex].Id);
-            }
 
-            var node = Preferences.Instance.FindOrAddNodeByRepositoryPath(path, parent, true);
-            node.Bookmark = _bookmark;
-            await node.UpdateStatusAsync(false, null);
-
-            var launcher = App.GetLauncher();
-            LauncherPage page = null;
-            foreach (var one in launcher.Pages)
+            var local = _local;
+            if (string.IsNullOrWhiteSpace(local))
             {
-                if (one.Node.Id == _pageId)
-                {
-                    page = one;
-                    break;
-                }
+                local = Path.GetFileName(_remote.TrimEnd('/'));
+                if (local.EndsWith(".git", StringComparison.Ordinal)) local = local[..^4];
+                else if (local.EndsWith(".bundle", StringComparison.Ordinal)) local = local[..^7];
             }
-
-            Welcome.Instance.Refresh();
-            launcher.OpenRepositoryInTab(node, page);
-
-            _cancellation = null;
-            return true;
-        }
-
-        public override void Terminate()
-        {
-            // Just fire cancel event and UI will auto wait the `Sure` complete
-            var _ = _cancellation?.CancelAsync();
+            try
+            {
+                await Models.BackgroundTasks.EnqueueCloneAsync(new Models.BackgroundCloneRequest
+                {
+                    GitExecutable = Native.OS.GitExecutable,
+                    CredentialHelper = Native.OS.CredentialHelper,
+                    ParentFolder = _parentFolder, LocalName = local, Remote = _remote,
+                    SSHKey = _useSSH ? _sshKey : string.Empty, ExtraArgs = _extraArgs,
+                    Submodules = InitAndUpdateSubmodules, GroupId = parent?.Id ?? string.Empty, Bookmark = _bookmark,
+                });
+                App.OpenRepositoryTools(2);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Models.Notification.Send(_pageId, ex.Message, true);
+                return false;
+            }
         }
 
         private void CollectGroups(List<TargetGroup> outs, List<RepositoryNode> collections, string prefix = null)
@@ -246,6 +180,6 @@ namespace SourceGit.ViewModels
         private int _selectedGroupIndex = 0;
         private bool _canAutoSelectGroup = false;
         private int _bookmark = 0;
-        private CancellationTokenSource _cancellation = null;
+
     }
 }

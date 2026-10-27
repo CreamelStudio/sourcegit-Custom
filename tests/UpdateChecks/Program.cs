@@ -8,6 +8,12 @@ using SourceGit;
 using SourceGit.Models;
 using ReleaseVersion = SourceGit.Models.Version;
 
+if (args.Length == 5 && args[0] == "--background-submit")
+{
+    await WorkspaceChecks.SubmitAsync(args[1], args[2], args[3], args[4]);
+    return;
+}
+
 static void Check(bool condition, string description)
 {
     if (!condition)
@@ -135,6 +141,7 @@ Console.WriteLine("Update checks passed: versions, platform assets, installed re
 try
 {
     await FetchChecks.RunAsync();
+    await WorkspaceChecks.RunAsync();
 PresetChecks.CheckLauncher();
 }
 catch (Exception ex)
