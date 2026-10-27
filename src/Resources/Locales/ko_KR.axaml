@@ -3,6 +3,29 @@
     <ResourceInclude Source="avares://SourceGit/Resources/Locales/en_US.axaml"/>
   </ResourceDictionary.MergedDictionaries>
 
+  <x:String x:Key="Text.Repository.OpenUnity" xml:space="preserve">Unity 프로젝트 열기</x:String>
+  <x:String x:Key="Text.Repository.UnityMissing" xml:space="preserve">Unity 프로젝트를 찾을 수 없습니다. 저장소를 새로고침한 뒤 다시 시도하세요.</x:String>
+  <x:String x:Key="Text.Repository.UnityEditorMissing" xml:space="preserve">Unity Hub의 설치 폴더에서 Unity {0}을 찾지 못했습니다. Hub에서 같은 버전을 설치한 뒤 다시 시도하세요.</x:String>
+  <x:String x:Key="Text.Repository.UnityLaunchFailed" xml:space="preserve">Unity를 열지 못했습니다: {0}</x:String>
+  <x:String x:Key="Text.Presets" xml:space="preserve">프리셋</x:String>
+  <x:String x:Key="Text.Presets.Description" xml:space="preserve">이름을 정하고 현재 화면을 저장하세요. Ctrl+F1~F10으로 전환하고 Ctrl+Shift+F1~F10으로 해당 칸에 현재 화면을 저장합니다.</x:String>
+  <x:String x:Key="Text.Presets.Select" xml:space="preserve">프리셋</x:String>
+  <x:String x:Key="Text.Presets.Switch" xml:space="preserve">클릭해서 프리셋을 바꾸거나 현재 구성을 저장하세요.</x:String>
+  <x:String x:Key="Text.Presets.Modified" xml:space="preserve">탭 구성이나 화면 설정이 저장본과 다릅니다. 다시 저장하면 변경사항이 반영됩니다.</x:String>
+  <x:String x:Key="Text.Presets.SaveCurrent" xml:space="preserve">현재 구성으로 다시 저장</x:String>
+  <x:String x:Key="Text.Presets.Configure" xml:space="preserve">프리셋 설정…</x:String>
+  <x:String x:Key="Text.Presets.Number" xml:space="preserve">프리셋 {0}</x:String>
+  <x:String x:Key="Text.Presets.Welcome" xml:space="preserve">저장소 목록</x:String>
+  <x:String x:Key="Text.Presets.Scope" xml:space="preserve">탭·순서·선택, 테마·글꼴·배율·패널 배치를 저장합니다. 브랜치·파일·Git 설정은 유지됩니다. 다시 저장하면 기존 프리셋을 덮어씁니다.</x:String>
+  <x:String x:Key="Text.Presets.Name" xml:space="preserve">프리셋 이름</x:String>
+  <x:String x:Key="Text.Presets.Save" xml:space="preserve">현재 화면 저장</x:String>
+  <x:String x:Key="Text.Presets.Apply" xml:space="preserve">적용</x:String>
+  <x:String x:Key="Text.Presets.Clear" xml:space="preserve">비우기</x:String>
+  <x:String x:Key="Text.Presets.Saved" xml:space="preserve">{0}에 탭 {1}개와 화면 설정을 저장했습니다.</x:String>
+  <x:String x:Key="Text.Presets.Cleared" xml:space="preserve">{0}을 비웠습니다.</x:String>
+  <x:String x:Key="Text.Presets.Empty" xml:space="preserve">Ctrl+F{0}에 저장된 프리셋이 없습니다. 환경설정 → 프리셋에서 저장하세요.</x:String>
+  <x:String x:Key="Text.Presets.Popup" xml:space="preserve">현재 작업을 마치거나 저장소 창을 닫은 뒤 프리셋을 전환하세요.</x:String>
+  <x:String x:Key="Text.Presets.Missing" xml:space="preserve">프리셋의 저장소를 열 수 없습니다: {0}. 현재 탭은 유지했습니다.</x:String>
   <x:String x:Key="Text.About" xml:space="preserve">정보</x:String>
   <x:String x:Key="Text.About.Menu" xml:space="preserve">SourceGit 정보</x:String>
   <x:String x:Key="Text.About.ReleaseDate" xml:space="preserve">배포일: {0}</x:String>

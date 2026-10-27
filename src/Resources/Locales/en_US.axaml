@@ -1,4 +1,27 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <x:String x:Key="Text.Repository.OpenUnity" xml:space="preserve">Open Unity project</x:String>
+  <x:String x:Key="Text.Repository.UnityMissing" xml:space="preserve">This Unity project is no longer available. Refresh the repository and try again.</x:String>
+  <x:String x:Key="Text.Repository.UnityEditorMissing" xml:space="preserve">Unity {0} was not found in Unity Hub's editor folders. Install that version in Unity Hub and try again.</x:String>
+  <x:String x:Key="Text.Repository.UnityLaunchFailed" xml:space="preserve">Could not open Unity: {0}</x:String>
+  <x:String x:Key="Text.Presets" xml:space="preserve">Presets</x:String>
+  <x:String x:Key="Text.Presets.Description" xml:space="preserve">Name a slot and save the current screen. Ctrl+F1~F10 switches presets; Ctrl+Shift+F1~F10 saves the current screen to that slot.</x:String>
+  <x:String x:Key="Text.Presets.Select" xml:space="preserve">Presets</x:String>
+  <x:String x:Key="Text.Presets.Switch" xml:space="preserve">Click to switch presets or save the current configuration.</x:String>
+  <x:String x:Key="Text.Presets.Modified" xml:space="preserve">Tabs or appearance differ from the saved preset. Save again to keep these changes.</x:String>
+  <x:String x:Key="Text.Presets.SaveCurrent" xml:space="preserve">Save current configuration</x:String>
+  <x:String x:Key="Text.Presets.Configure" xml:space="preserve">Configure presets…</x:String>
+  <x:String x:Key="Text.Presets.Number" xml:space="preserve">Preset {0}</x:String>
+  <x:String x:Key="Text.Presets.Welcome" xml:space="preserve">Repositories</x:String>
+  <x:String x:Key="Text.Presets.Scope" xml:space="preserve">Saves tabs, order, selection, theme, fonts, zoom and panel layout. Branches, files and Git settings stay as they are. Save again to replace a preset.</x:String>
+  <x:String x:Key="Text.Presets.Name" xml:space="preserve">Preset name</x:String>
+  <x:String x:Key="Text.Presets.Save" xml:space="preserve">Save current screen</x:String>
+  <x:String x:Key="Text.Presets.Apply" xml:space="preserve">Apply</x:String>
+  <x:String x:Key="Text.Presets.Clear" xml:space="preserve">Clear</x:String>
+  <x:String x:Key="Text.Presets.Saved" xml:space="preserve">Saved {0} ({1} tabs).</x:String>
+  <x:String x:Key="Text.Presets.Cleared" xml:space="preserve">Cleared {0}.</x:String>
+  <x:String x:Key="Text.Presets.Empty" xml:space="preserve">Ctrl+F{0} is empty. Save a preset in Preferences → Presets.</x:String>
+  <x:String x:Key="Text.Presets.Popup" xml:space="preserve">Finish the current operation or close the repository dialog before switching presets.</x:String>
+  <x:String x:Key="Text.Presets.Missing" xml:space="preserve">Cannot open preset repository: {0}. Current tabs have been kept.</x:String>
   <x:String x:Key="Text.About" xml:space="preserve">About</x:String>
   <x:String x:Key="Text.About.Menu" xml:space="preserve">About SourceGit</x:String>
   <x:String x:Key="Text.About.ReleaseDate" xml:space="preserve">Release Date: {0}</x:String>

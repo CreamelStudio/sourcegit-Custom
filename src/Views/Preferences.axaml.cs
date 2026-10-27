@@ -226,6 +226,41 @@ namespace SourceGit.Views
             preferences.Save();
         }
 
+        private void OnSavePreset(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button { DataContext: ViewModels.WorkspacePreset preset } && App.GetLauncher() is { } launcher)
+            {
+                launcher.SavePreset(preset);
+                PresetStatus.Text = App.Text("Presets.Saved", preset.Shortcut, preset.Tabs.Count);
+            }
+            e.Handled = true;
+        }
+
+        public void SelectPresets() => Sections.SelectedItem = PresetsTab;
+
+        private void OnApplyPreset(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button { DataContext: ViewModels.WorkspacePreset preset } && App.GetLauncher() is { } launcher)
+            {
+                if (launcher.ApplyPreset(preset.Slot))
+                    Close();
+                else if (launcher.ActivePage.Notifications.Count > 0)
+                    PresetStatus.Text = launcher.ActivePage.Notifications[^1].Message;
+            }
+            e.Handled = true;
+        }
+
+        private void OnClearPreset(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button { DataContext: ViewModels.WorkspacePreset preset })
+            {
+                preset.Clear();
+                ViewModels.Preferences.Instance.Save();
+                PresetStatus.Text = App.Text("Presets.Cleared", preset.Shortcut);
+            }
+            e.Handled = true;
+        }
+
         private async void SelectThemeOverrideFile(object _, RoutedEventArgs e)
         {
             var options = new FilePickerOpenOptions()

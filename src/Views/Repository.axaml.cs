@@ -1,4 +1,6 @@
 using System;
+using System.ComponentModel;
+using System.Linq;
 
 using Avalonia;
 using Avalonia.Controls;
@@ -88,10 +90,80 @@ namespace SourceGit.Views
             UpdateLeftSidebarLayout();
         }
 
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+            ViewModels.Preferences.Instance.PropertyChanged += OnPreferencesChanged;
+            CalculateSidebarWidth();
+        }
+
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            ViewModels.Preferences.Instance.PropertyChanged -= OnPreferencesChanged;
+            base.OnDetachedFromVisualTree(e);
+        }
+
+        private void OnPreferencesChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(ViewModels.Preferences.Layout))
+                CalculateSidebarWidth();
+        }
+
         private async void OnOpenFetchLogs(object sender, RoutedEventArgs e)
         {
             if (DataContext is ViewModels.Repository repo)
                 await this.ShowDialogAsync(new ViewModels.ViewLogs(repo));
+            e.Handled = true;
+        }
+
+        private void OnOpenPresetMenu(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button button || App.GetLauncher() is not { } launcher)
+                return;
+
+            var menu = new ContextMenu();
+            foreach (var preset in ViewModels.Preferences.Instance.Presets)
+            {
+                var item = new MenuItem
+                {
+                    Header = string.IsNullOrWhiteSpace(preset.Name) ? App.Text("Presets.Number", preset.Slot) : preset.Name,
+                    InputGesture = new KeyGesture((Key)((int)Key.F1 + preset.Slot - 1), KeyModifiers.Control),
+                    IsEnabled = preset.IsSaved,
+                };
+                if (launcher.ActivePreset == preset)
+                    item.Icon = this.CreateMenuIcon("Icons.Check");
+                if (preset.IsSaved)
+                    ToolTip.SetTip(item, string.Join('\n', preset.Tabs.Select(t => string.IsNullOrEmpty(t.Path) ? App.Text("Presets.Welcome") : t.Path)));
+                item.Click += (_, ev) =>
+                {
+                    launcher.ApplyPreset(preset.Slot);
+                    ev.Handled = true;
+                };
+                menu.Items.Add(item);
+            }
+
+            menu.Items.Add(new MenuItem { Header = "-" });
+            var save = new MenuItem { Header = App.Text("Presets.SaveCurrent"), IsEnabled = launcher.ActivePreset != null };
+            if (launcher.ActivePreset is { } active)
+                save.InputGesture = new KeyGesture((Key)((int)Key.F1 + active.Slot - 1), KeyModifiers.Control | KeyModifiers.Shift);
+            save.Click += (_, ev) =>
+            {
+                if (launcher.ActivePreset is { } current)
+                    launcher.QuickSavePreset(current.Slot);
+                ev.Handled = true;
+            };
+            menu.Items.Add(save);
+
+            var configure = new MenuItem { Header = App.Text("Presets.Configure") };
+            configure.Click += async (_, ev) =>
+            {
+                var view = new Preferences();
+                view.SelectPresets();
+                await this.ShowDialogAsync(view);
+                ev.Handled = true;
+            };
+            menu.Items.Add(configure);
+            menu.Open(button);
             e.Handled = true;
         }
 

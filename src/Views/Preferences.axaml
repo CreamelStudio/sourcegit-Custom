@@ -42,7 +42,8 @@
 
     <!-- Body -->
     <Border Grid.Row="1">
-      <TabControl>
+      <TabControl x:Name="Sections">
+
         <TabItem>
           <TabItem.Header>
             <TextBlock Classes="tab_header" Text="{DynamicResource Text.Preferences.General}"/>
@@ -946,6 +947,34 @@
               </ContentControl.DataTemplates>
             </ContentControl>
           </Grid>
+        </TabItem>
+        <TabItem x:Name="PresetsTab">
+          <TabItem.Header>
+            <TextBlock Classes="tab_header" Text="{DynamicResource Text.Presets}"/>
+          </TabItem.Header>
+          <StackPanel Margin="12" Spacing="8" MaxWidth="720">
+            <TextBlock Text="{DynamicResource Text.Presets.Description}" TextWrapping="Wrap"/>
+            <TextBlock Text="{DynamicResource Text.Presets.Scope}" TextWrapping="Wrap" Foreground="{DynamicResource Brush.FG2}"/>
+            <ItemsControl ItemsSource="{Binding Presets}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:WorkspacePreset">
+                  <Grid ColumnDefinitions="86,*,Auto,Auto,Auto" Margin="0,4">
+                    <TextBlock Text="{Binding Shortcut}" FontWeight="Bold"/>
+                    <TextBox Grid.Column="1" MinWidth="135" Height="28" Margin="0,0,8,0"
+                             Watermark="{DynamicResource Text.Presets.Name}"
+                             Text="{Binding Name, Mode=TwoWay}"/>
+                    <Button Grid.Column="2" Margin="0,0,6,0" Padding="8,3"
+                            Content="{DynamicResource Text.Presets.Save}" Click="OnSavePreset"/>
+                    <Button Grid.Column="3" Margin="0,0,6,0" Padding="8,3"
+                            Content="{DynamicResource Text.Presets.Apply}" IsEnabled="{Binding IsSaved}" Click="OnApplyPreset"/>
+                    <Button Grid.Column="4" Padding="8,3" Content="{DynamicResource Text.Presets.Clear}"
+                            IsEnabled="{Binding IsSaved}" Click="OnClearPreset"/>
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <TextBlock x:Name="PresetStatus" TextWrapping="Wrap" Foreground="{DynamicResource Brush.FG2}"/>
+          </StackPanel>
         </TabItem>
       </TabControl>
     </Border>

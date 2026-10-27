@@ -26,6 +26,7 @@ namespace SourceGit.ViewModels
                 _instance.PrepareShellOrTerminal();
                 _instance.PrepareExternalDiffMergeTool();
                 _instance.PrepareWorkspaces();
+                _instance.PreparePresets();
 
                 return _instance;
             }
@@ -462,6 +463,14 @@ namespace SourceGit.ViewModels
             set;
         } = [];
 
+        public List<WorkspacePreset> Presets { get; set; } = [];
+
+        public int ActivePresetSlot
+        {
+            get => _activePresetSlot;
+            set => SetProperty(ref _activePresetSlot, value is >= 1 and <= 10 ? value : 0);
+        }
+
         public AvaloniaList<Models.CustomAction> CustomActions
         {
             get;
@@ -702,6 +711,14 @@ namespace SourceGit.ViewModels
             }
         }
 
+        internal void PreparePresets()
+        {
+            var presets = new List<WorkspacePreset>();
+            for (var slot = 1; slot <= 10; slot++)
+                presets.Add(Presets?.Find(p => p != null && p.Slot == slot) ?? new WorkspacePreset { Slot = slot });
+            Presets = presets;
+        }
+
         private void PrepareWorkspaces()
         {
             if (Workspaces.Count == 0)
@@ -812,6 +829,7 @@ namespace SourceGit.ViewModels
         private static Preferences _instance = null;
 
         private bool _isLoading = true;
+        private int _activePresetSlot;
         private bool _enableAutoFetch = true;
         private int _autoFetchInterval = 10;
         private bool _isReadonly = true;

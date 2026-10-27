@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 
 using Avalonia.Controls;
@@ -16,6 +17,55 @@ namespace SourceGit.Views
         public RepositoryToolbar()
         {
             InitializeComponent();
+        }
+
+        private void OpenUnity(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button button || DataContext is not ViewModels.Repository repo)
+                return;
+            if (repo.UnityProjects.Count == 1)
+                LaunchUnity(repo, repo.UnityProjects[0]);
+            else
+            {
+                var menu = new ContextMenu();
+                foreach (var project in repo.UnityProjects)
+                {
+                    var item = new MenuItem { Header = $"{Path.GetRelativePath(repo.FullPath, project.FullPath)} · {project.EditorVersion}" };
+                    ToolTip.SetTip(item, project.FullPath);
+                    item.Click += (_, ev) =>
+                    {
+                        LaunchUnity(repo, project);
+                        ev.Handled = true;
+                    };
+                    menu.Items.Add(item);
+                }
+                menu.Open(button);
+            }
+            e.Handled = true;
+        }
+
+        private static void LaunchUnity(ViewModels.Repository repo, Models.UnityProject selected)
+        {
+            try
+            {
+                var project = Models.UnityProject.Read(selected.FullPath);
+                if (project == null)
+                {
+                    repo.SendNotification(App.Text("Repository.UnityMissing"), true);
+                    return;
+                }
+                var editor = project.FindEditor(Models.UnityProject.EditorRoots());
+                if (editor == null)
+                {
+                    repo.SendNotification(App.Text("Repository.UnityEditorMissing", project.EditorVersion), true);
+                    return;
+                }
+                using var process = Process.Start(project.CreateStartInfo(editor));
+            }
+            catch (Exception ex)
+            {
+                repo.SendNotification(App.Text("Repository.UnityLaunchFailed", ex.Message), true);
+            }
         }
 
         private void OpenWithExternalTools(object sender, RoutedEventArgs ev)

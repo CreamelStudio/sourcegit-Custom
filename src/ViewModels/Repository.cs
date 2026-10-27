@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -213,7 +214,28 @@ namespace SourceGit.ViewModels
         public List<Models.Submodule> Submodules
         {
             get => _submodules;
-            private set => SetProperty(ref _submodules, value);
+            private set
+            {
+                if (SetProperty(ref _submodules, value))
+                    RefreshUnityProjects();
+            }
+        }
+
+        public List<Models.UnityProject> UnityProjects
+        {
+            get => _unityProjects;
+            private set
+            {
+                if (SetProperty(ref _unityProjects, value))
+                    OnPropertyChanged(nameof(HasUnityProjects));
+            }
+        }
+
+        public bool HasUnityProjects => UnityProjects.Count > 0;
+
+        private void RefreshUnityProjects()
+        {
+            UnityProjects = IsBare ? [] : Models.UnityProject.Find(FullPath, Submodules.Select(s => s.Path));
         }
 
         public bool ShowSubmodulesAsTree
@@ -640,6 +662,7 @@ namespace SourceGit.ViewModels
 
         public void RefreshAll()
         {
+            RefreshUnityProjects();
             RefreshCommits();
             RefreshBranches();
             RefreshTags();
@@ -2045,6 +2068,7 @@ namespace SourceGit.ViewModels
         private List<Models.Tag> _tags = [];
         private object _visibleTags = null;
         private List<Models.Submodule> _submodules = [];
+        private List<Models.UnityProject> _unityProjects = [];
         private object _visibleSubmodules = null;
         private string _navigateToCommitDelayed = string.Empty;
 

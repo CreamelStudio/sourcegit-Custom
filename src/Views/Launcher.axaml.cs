@@ -145,6 +145,18 @@ namespace SourceGit.Views
             // Register hotkeys for Windows/Linux (macOS has registered these keys in system menu bar)
             var isMacOS = OperatingSystem.IsMacOS();
             var cmdKey = isMacOS ? KeyModifiers.Meta : KeyModifiers.Control;
+            var savePreset = e.KeyModifiers == (KeyModifiers.Control | KeyModifiers.Shift);
+            var presetSlot = ViewModels.WorkspacePreset.GetSlot(e.Key, savePreset ? KeyModifiers.Control : e.KeyModifiers);
+            if (presetSlot != 0)
+            {
+                if (savePreset)
+                    vm.QuickSavePreset(presetSlot);
+                else
+                    vm.ApplyPreset(presetSlot);
+                e.Handled = true;
+                return;
+            }
+
             if (!isMacOS)
             {
                 if (e is { KeyModifiers: KeyModifiers.Control, Key: Key.OemComma })

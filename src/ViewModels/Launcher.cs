@@ -1,5 +1,9 @@
 using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 using Avalonia.Collections;
@@ -19,8 +23,28 @@ namespace SourceGit.ViewModels
 
         public AvaloniaList<LauncherPage> Pages
         {
-            get;
-            private set;
+            get => _pages;
+            private set
+            {
+                if (_pages != null)
+                    _pages.CollectionChanged -= OnPresetTabsChanged;
+                _pages = value;
+                _pages.CollectionChanged += OnPresetTabsChanged;
+                OnPropertyChanged();
+                RefreshPresetStatus();
+            }
+        }
+
+        public WorkspacePreset ActivePreset => _activePreset;
+        public string PresetLabel => _activePreset == null ? App.Text("Presets.Select") :
+            string.IsNullOrWhiteSpace(_activePreset.Name) ? $"F{_activePreset.Slot}" : $"F{_activePreset.Slot} · {_activePreset.Name}";
+        public string PresetTooltip => _activePreset == null ? App.Text("Presets.Switch") :
+            $"{_activePreset.Shortcut} · {_activePreset.Name}\n{App.Text(IsPresetModified ? "Presets.Modified" : "Presets.Switch")}";
+
+        public bool IsPresetModified
+        {
+            get => _isPresetModified;
+            private set => SetProperty(ref _isPresetModified, value);
         }
 
         public Workspace ActiveWorkspace
@@ -55,6 +79,10 @@ namespace SourceGit.ViewModels
         {
             Models.Notification.Raised += DispatchNotification;
             _ignoreIndexChange = true;
+
+            Preferences.Instance.PropertyChanged += OnPresetPreferencesChanged;
+            _presetLayout = Preferences.Instance.Layout;
+            _presetLayout.PropertyChanged += OnPresetLayoutChanged;
 
             ActiveWorkspace = Preferences.Instance.GetActiveWorkspace();
             Pages = new AvaloniaList<LauncherPage>();
@@ -120,6 +148,12 @@ namespace SourceGit.ViewModels
         public void CloseAll()
         {
             _ignoreIndexChange = true;
+            Models.Notification.Raised -= DispatchNotification;
+            Preferences.Instance.PropertyChanged -= OnPresetPreferencesChanged;
+            _presetLayout.PropertyChanged -= OnPresetLayoutChanged;
+            Pages.CollectionChanged -= OnPresetTabsChanged;
+            if (_activePreset != null)
+                _activePreset.PropertyChanged -= OnActivePresetChanged;
 
             foreach (var one in Pages)
                 CloseRepositoryInTab(one, false);
@@ -135,6 +169,7 @@ namespace SourceGit.ViewModels
             _ignoreIndexChange = true;
 
             var pref = Preferences.Instance;
+            pref.ActivePresetSlot = 0;
             foreach (var w in pref.Workspaces)
                 w.IsActive = false;
 
@@ -170,6 +205,133 @@ namespace SourceGit.ViewModels
             ActivePage = page;
         }
 
+        public void SavePreset(WorkspacePreset preset)
+        {
+            preset.Capture(Preferences.Instance, GetPresetTabs(), Pages.IndexOf(ActivePage));
+            Preferences.Instance.ActivePresetSlot = preset.Slot;
+            RefreshPresetStatus();
+            Preferences.Instance.Save();
+        }
+
+        public bool QuickSavePreset(int slot)
+        {
+            var preset = Preferences.Instance.Presets.Find(p => p.Slot == slot);
+            if (preset == null)
+                return false;
+            SavePreset(preset);
+            return true;
+        }
+
+        public bool ApplyPreset(int slot)
+        {
+            var pref = Preferences.Instance;
+            var preset = pref.Presets.Find(p => p.Slot == slot);
+            if (preset is not { IsSaved: true })
+            {
+                Models.Notification.Send(string.Empty, App.Text("Presets.Empty", slot), false);
+                return false;
+            }
+
+            if (Pages.Any(p => p.Popup != null || p.Data is Repository r &&
+                (r.IsBisectCommandRunning || r.WorkingCopy is { IsCommitting: true } or { IsStaging: true } or { IsUnstaging: true })))
+            {
+                Models.Notification.Send(string.Empty, App.Text("Presets.Popup"), false);
+                return false;
+            }
+
+            foreach (var tab in preset.Tabs)
+            {
+                if (tab?.Path == null || (tab.Path.Length > 0 && !Directory.Exists(tab.Path)))
+                {
+                    Models.Notification.Send(string.Empty, App.Text("Presets.Missing", tab?.Path), true);
+                    return false;
+                }
+            }
+
+            var original = Pages.ToArray();
+            var previousActive = ActivePage;
+            var restored = new List<LauncherPage>();
+            var completed = false;
+            _ignoreIndexChange = true;
+            try
+            {
+                foreach (var tab in preset.Tabs)
+                {
+                    LauncherPage page;
+                    if (tab.Path.Length == 0)
+                    {
+                        page = Pages.FirstOrDefault(p => p.Data is Welcome && !restored.Contains(p));
+                        if (page == null)
+                        {
+                            page = new LauncherPage();
+                            Pages.Add(page);
+                        }
+                    }
+                    else
+                    {
+                        page = Pages.FirstOrDefault(p => p.Data is Repository r && r.FullPath == tab.Path);
+                        if (page == null)
+                        {
+                            // Preserve saved welcome tabs while opening a repository.
+                            AddNewTab();
+                            OpenRepositoryInTab(tab.Path, null);
+                            page = Pages.FirstOrDefault(p => p.Data is Repository r && r.FullPath == tab.Path);
+                        }
+                        if (page == null || restored.Contains(page))
+                        {
+                            previousActive.Notifications.Add(new Models.Notification
+                            {
+                                Message = App.Text("Presets.Missing", tab.Path),
+                                IsError = true,
+                            });
+                            return false;
+                        }
+                    }
+
+                    restored.Add(page);
+                }
+
+                preset.Appearance?.Apply(pref);
+                foreach (var page in Pages.ToArray())
+                {
+                    if (!restored.Contains(page))
+                        CloseRepositoryInTab(page, false);
+                }
+
+                Pages = new AvaloniaList<LauncherPage>(restored);
+                for (var i = 0; i < restored.Count; i++)
+                {
+                    if (restored[i].Data is Repository repo)
+                        repo.SelectedViewIndex = Math.Clamp(preset.Tabs[i].SelectedViewIndex, 0, 2);
+                }
+                ActivePage = restored[Math.Clamp(preset.ActiveIndex, 0, restored.Count - 1)];
+                pref.ActivePresetSlot = slot;
+                completed = true;
+            }
+            finally
+            {
+                if (!completed)
+                {
+                    foreach (var page in Pages.ToArray())
+                    {
+                        if (!original.Contains(page))
+                        {
+                            CloseRepositoryInTab(page, false);
+                            Pages.Remove(page);
+                        }
+                    }
+                    ActivePage = previousActive;
+                }
+
+                ActiveWorkspace.Repositories = Pages.Where(p => p.Data is Repository).Select(p => ((Repository)p.Data).FullPath).ToList();
+                _ignoreIndexChange = false;
+                PostActivePageChanged();
+            }
+
+            pref.Save();
+            return true;
+        }
+
         public void MoveTab(LauncherPage from, LauncherPage to)
         {
             _ignoreIndexChange = true;
@@ -187,6 +349,7 @@ namespace SourceGit.ViewModels
 
             _ignoreIndexChange = false;
             ActivePage = from;
+            RefreshPresetStatus();
         }
 
         public void GotoNextTab()
@@ -267,10 +430,10 @@ namespace SourceGit.ViewModels
             }
 
             Pages = new AvaloniaList<LauncherPage> { ActivePage };
-            OnPropertyChanged(nameof(Pages));
 
             _activeWorkspace.ActiveIdx = 0;
             _ignoreIndexChange = false;
+            RefreshPresetStatus();
             GC.Collect();
         }
 
@@ -286,6 +449,7 @@ namespace SourceGit.ViewModels
             }
 
             _ignoreIndexChange = false;
+            RefreshPresetStatus();
             GC.Collect();
         }
 
@@ -537,9 +701,66 @@ namespace SourceGit.ViewModels
 
             Title = builder.ToString();
             CommandPalette = null;
+            RefreshPresetStatus();
+        }
+
+        private IEnumerable<PresetTab> GetPresetTabs()
+        {
+            return Pages.Select(p => new PresetTab
+            {
+                Path = p.Data is Repository repo ? repo.FullPath : string.Empty,
+                SelectedViewIndex = p.Data is Repository r ? r.SelectedViewIndex : 0,
+            });
+        }
+
+        private void RefreshPresetStatus()
+        {
+            if (_ignoreIndexChange || _pages == null)
+                return;
+
+            var pref = Preferences.Instance;
+            var preset = pref.Presets.Find(p => p.Slot == pref.ActivePresetSlot && p.IsSaved);
+            if (_activePreset != preset)
+            {
+                if (_activePreset != null)
+                    _activePreset.PropertyChanged -= OnActivePresetChanged;
+                _activePreset = preset;
+                if (_activePreset != null)
+                    _activePreset.PropertyChanged += OnActivePresetChanged;
+                OnPropertyChanged(nameof(ActivePreset));
+            }
+
+            IsPresetModified = _activePreset != null && !_activePreset.Matches(pref, GetPresetTabs());
+            OnPropertyChanged(nameof(PresetLabel));
+            OnPropertyChanged(nameof(PresetTooltip));
+        }
+
+        private void OnPresetTabsChanged(object sender, NotifyCollectionChangedEventArgs e) => RefreshPresetStatus();
+        private void OnPresetLayoutChanged(object sender, PropertyChangedEventArgs e) => RefreshPresetStatus();
+
+        private void OnActivePresetChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (_activePreset is { IsSaved: false })
+                Preferences.Instance.ActivePresetSlot = 0;
+            RefreshPresetStatus();
+        }
+
+        private void OnPresetPreferencesChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(Preferences.Layout))
+            {
+                _presetLayout.PropertyChanged -= OnPresetLayoutChanged;
+                _presetLayout = Preferences.Instance.Layout;
+                _presetLayout.PropertyChanged += OnPresetLayoutChanged;
+            }
+            RefreshPresetStatus();
         }
 
         private Workspace _activeWorkspace;
+        private AvaloniaList<LauncherPage> _pages;
+        private WorkspacePreset _activePreset;
+        private LayoutInfo _presetLayout;
+        private bool _isPresetModified;
         private LauncherPage _activePage;
         private bool _ignoreIndexChange;
         private string _title = string.Empty;
