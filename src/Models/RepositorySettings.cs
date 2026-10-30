@@ -4,7 +4,6 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 using Avalonia.Collections;
 
@@ -12,6 +11,8 @@ namespace SourceGit.Models
 {
     public class RepositorySettings
     {
+        public ProjectOpener ProjectOpener { get; set; }
+
         public string DefaultRemote
         {
             get;
@@ -84,12 +85,9 @@ namespace SourceGit.Models
                 }
             }
 
-            // Serialize setting again to make sure there are no unnecessary whitespaces.
-            Task.Run(() =>
-            {
-                var formatted = JsonSerializer.Serialize(setting, JsonCodeGen.Default.RepositorySettings);
-                setting._orgHash = HashContent(formatted);
-            });
+            // Capture the saved baseline before callers can change and save a setting.
+            var formatted = JsonSerializer.Serialize(setting, JsonCodeGen.Default.RepositorySettings);
+            setting._orgHash = HashContent(formatted);
 
             setting._file = fullpath;
             _cache.Add(fullpath, setting);

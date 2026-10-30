@@ -1,5 +1,22 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <x:String x:Key="Text.Repository.OpenUnity" xml:space="preserve">Open Unity project</x:String>
+  <x:String x:Key="Text.About.Credits" xml:space="preserve">Credits</x:String>
+  <x:String x:Key="Text.Repository.ProjectOpener.Select" xml:space="preserve">Choose this repository's project opener</x:String>
+  <x:String x:Key="Text.Repository.ProjectOpener.Open" xml:space="preserve">Open in {0} · {1}</x:String>
+  <x:String x:Key="Text.Repository.ProjectOpener.CurrentFolder" xml:space="preserve">Current folder</x:String>
+  <x:String x:Key="Text.Repository.ProjectOpener.ChooseProgram" xml:space="preserve">Choose another program…</x:String>
+  <x:String x:Key="Text.Repository.ProjectOpener.ChooseFolder" xml:space="preserve">Choose folder to open…</x:String>
+  <x:String x:Key="Text.Repository.ProjectOpener.ChooseFile" xml:space="preserve">Choose file to open…</x:String>
+  <x:String x:Key="Text.Repository.ProjectOpener.Reset" xml:space="preserve">Reset project opener</x:String>
+  <x:String x:Key="Text.Repository.ProjectOpener.Other" xml:space="preserve">Other open options…</x:String>
+  <x:String x:Key="Text.Repository.ProjectOpener.Failed" xml:space="preserve">Could not open or connect the project. Check the selected program and target: {0}</x:String>
+  <x:String x:Key="Text.Histories.Filter.Placeholder" xml:space="preserve">Filter commits by message, hash or author…</x:String>
+  <x:String x:Key="Text.Histories.Filter.All" xml:space="preserve">All fields</x:String>
+  <x:String x:Key="Text.Histories.Filter.Searching" xml:space="preserve">Searching…</x:String>
+  <x:String x:Key="Text.Histories.Filter.Error" xml:space="preserve">Search failed</x:String>
+  <x:String x:Key="Text.Histories.Filter.Count" xml:space="preserve">{0} commits</x:String>
+  <x:String x:Key="Text.Histories.Filter.Limit" xml:space="preserve">{0} commits (limit)</x:String>
+  <x:String x:Key="Text.Histories.Filter.Close" xml:space="preserve">Close filter (Esc)</x:String>
   <x:String x:Key="Text.Repository.UnityMissing" xml:space="preserve">This Unity project is no longer available. Refresh the repository and try again.</x:String>
   <x:String x:Key="Text.Repository.UnityEditorMissing" xml:space="preserve">Unity {0} was not found in Unity Hub's editor folders. Install that version in Unity Hub and try again.</x:String>
   <x:String x:Key="Text.Repository.UnityLaunchFailed" xml:space="preserve">Could not open Unity: {0}</x:String>
@@ -582,7 +599,7 @@
   <x:String x:Key="Text.Hotkeys.Repo.Push" xml:space="preserve">Push, starts directly</x:String>
   <x:String x:Key="Text.Hotkeys.Repo.Refresh" xml:space="preserve">Force to reload this repository</x:String>
   <x:String x:Key="Text.Hotkeys.Repo.ToggleCommitDetailPanel" xml:space="preserve">Expand/Collapse commit details panel</x:String>
-  <x:String x:Key="Text.Hotkeys.Repo.ToggleSearchCommits" xml:space="preserve">Toggle commit search panel</x:String>
+  <x:String x:Key="Text.Hotkeys.Repo.ToggleSearchCommits" xml:space="preserve">Open commit filter</x:String>
   <x:String x:Key="Text.Hotkeys.Repo.ViewChanges" xml:space="preserve">Switch to 'Local Changes'</x:String>
   <x:String x:Key="Text.Hotkeys.Repo.ViewDashboard" xml:space="preserve">Switch to 'Dashboard'</x:String>
   <x:String x:Key="Text.Hotkeys.Repo.ViewStashes" xml:space="preserve">Switch to 'Stashes'</x:String>

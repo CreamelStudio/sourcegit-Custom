@@ -297,6 +297,52 @@ namespace SourceGit.Views
 
     public partial class Histories : UserControl
     {
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            if (!e.Handled && e.Key == Key.Escape && DataContext is ViewModels.Histories { IsCommitFilterVisible: true })
+                OnCloseCommitFilter(this, e);
+            else
+                base.OnKeyDown(e);
+        }
+
+        public void OpenCommitFilter()
+        {
+            if (DataContext is not ViewModels.Histories histories)
+                return;
+            histories.IsCommitFilterVisible = true;
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                CommitFilterBox.Focus(NavigationMethod.Directional);
+                CommitFilterBox.SelectAll();
+            });
+        }
+
+        private void OnInlineFilterToggled(object _, RoutedEventArgs e)
+        {
+            if (DataContext is ViewModels.Histories { IsCommitFilterVisible: true })
+                OpenCommitFilter();
+            e.Handled = true;
+        }
+
+        private void OnCloseCommitFilter(object _, RoutedEventArgs e)
+        {
+            if (DataContext is ViewModels.Histories histories)
+                histories.IsCommitFilterVisible = false;
+            CommitListContainer.Focus();
+            e.Handled = true;
+        }
+
+        private void OnCommitFilterKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape)
+                OnCloseCommitFilter(sender, e);
+            else if (e.Key == Key.Enter && DataContext is ViewModels.Histories histories)
+            {
+                histories.SearchCommitFilter();
+                e.Handled = true;
+            }
+        }
+
         public static readonly DirectProperty<Histories, Models.Branch> CurrentBranchProperty =
             AvaloniaProperty.RegisterDirect<Histories, Models.Branch>(
                 nameof(CurrentBranch),
@@ -789,7 +835,7 @@ namespace SourceGit.Views
 
         private void OnScrollToTopPointerPressed(object sender, PointerPressedEventArgs e)
         {
-            if (DataContext is ViewModels.Histories histories)
+            if (DataContext is ViewModels.Histories histories && histories.Commits.Count > 0)
                 CommitListContainer.ScrollIntoView(histories.Commits[0], null);
         }
 

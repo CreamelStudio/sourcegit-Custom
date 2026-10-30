@@ -327,7 +327,7 @@ namespace SourceGit.Native
                     f.EndsWith(".slnx", StringComparison.OrdinalIgnoreCase))
                 {
                     var display = f.Substring(prefixLen).TrimStart(Path.DirectorySeparatorChar);
-                    options.Add(new(display, f.Quoted()));
+                    options.Add(new(display, f.Quoted(), f));
                 }
             });
             return options;
@@ -456,8 +456,7 @@ namespace SourceGit.Native
                     foreach (var instance in instances)
                     {
                         var exec = instance.ProductPath;
-                        var icon = instance.IsPrerelease ? "vs-preview" : "vs";
-                        finder.TryAdd(instance.DisplayName, icon, () => exec, GenerateVSProjectLaunchOptions, false);
+                        finder.TryAdd(instance.DisplayName, () => exec, GenerateVSProjectLaunchOptions, false);
                     }
                 }
             }

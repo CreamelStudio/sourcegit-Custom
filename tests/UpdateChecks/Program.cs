@@ -23,6 +23,8 @@ static void Check(bool condition, string description)
 var current = new System.Version(2026, 22, 0, 0);
 PresetChecks.Run();
 UnityChecks.Run();
+ProjectOpenerChecks.Run();
+ProgramIconChecks.Run();
 Check(ReleaseVersion.IsNewer("v2026.22.1", current), "A patch release must be detected.");
 Check(ReleaseVersion.IsNewer("v1.0.0", current), "The new version scheme must supersede the old date-based versions.");
 var v1 = new System.Version(1, 0, 0, 0);
@@ -142,6 +144,7 @@ try
 {
     await FetchChecks.RunAsync();
     await WorktreeChecks.RunAsync();
+    await CommitFilterChecks.RunAsync();
     await WorkspaceChecks.RunAsync();
 PresetChecks.CheckLauncher();
 }

@@ -39,25 +39,10 @@ namespace SourceGit.Models
             return null;
         }
 
-        public static List<UnityProject> Find(string repository, IEnumerable<string> submodules)
+        public static List<UnityProject> Find(string repository)
         {
-            var projects = new List<UnityProject>();
-            var root = Path.TrimEndingDirectorySeparator(Path.GetFullPath(repository));
-            var prefix = Path.EndsInDirectorySeparator(root) ? root : root + Path.DirectorySeparatorChar;
-            var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
-            // Only inspect known locations; never walk Unity's Library or the whole checkout.
-            foreach (var relative in new[] { string.Empty, "Client" }.Concat(submodules))
-            {
-                if (relative == null || Path.IsPathRooted(relative))
-                    continue;
-                var candidate = Path.GetFullPath(Path.Combine(root, relative));
-                if (!candidate.Equals(root, comparison) && !candidate.StartsWith(prefix, comparison))
-                    continue;
-                var project = Read(candidate);
-                if (project != null && !projects.Any(p => p.FullPath.Equals(candidate, comparison)))
-                    projects.Add(project);
-            }
-            return projects;
+            var project = Read(repository);
+            return project == null ? [] : [project];
         }
 
         public string FindEditor(IEnumerable<string> roots)

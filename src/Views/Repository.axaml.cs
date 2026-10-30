@@ -12,22 +12,6 @@ namespace SourceGit.Views
 {
     public partial class Repository : UserControl
     {
-        public static readonly DirectProperty<Repository, bool> IsCommitSearchPanelVisibleProperty =
-            AvaloniaProperty.RegisterDirect<Repository, bool>(
-                nameof(IsCommitSearchPanelVisible),
-                static o => o.IsCommitSearchPanelVisible,
-                static (o, v) => o.IsCommitSearchPanelVisible = v);
-
-        public bool IsCommitSearchPanelVisible
-        {
-            get => _isCommitSearchPanelVisible;
-            set
-            {
-                if (SetAndRaise(IsCommitSearchPanelVisibleProperty, ref _isCommitSearchPanelVisible, value))
-                    CalculateSidebarWidth();
-            }
-        }
-
         public static readonly DirectProperty<Repository, bool> IsNormalSidebarVisibleProperty =
             AvaloniaProperty.RegisterDirect<Repository, bool>(
                 nameof(IsNormalSidebarVisible),
@@ -70,9 +54,7 @@ namespace SourceGit.Views
                 if (SetAndRaise(SidebarWidthProperty, ref _sidebarWidth, value))
                 {
                     var layout = ViewModels.Preferences.Instance.Layout;
-                    if (_isCommitSearchPanelVisible)
-                        layout.RepositorySearchCommitWidth = value.Value;
-                    else if (_isNormalSidebarVisible)
+                    if (_isNormalSidebarVisible)
                         layout.RepositorySidebarWidth = value.Value;
                 }
             }
@@ -323,7 +305,7 @@ namespace SourceGit.Views
 
         private void UpdateLeftSidebarLayout()
         {
-            if (!IsLoaded || _isCommitSearchPanelVisible)
+            if (!IsLoaded)
                 return;
 
             if (DataContext is not ViewModels.Repository { UIStates: { } } vm)
@@ -592,12 +574,7 @@ namespace SourceGit.Views
         private void CalculateSidebarWidth()
         {
             var layout = ViewModels.Preferences.Instance.Layout;
-            if (_isCommitSearchPanelVisible)
-            {
-                SidebarMinWidth = 200;
-                SidebarWidth = new GridLength(layout.RepositorySearchCommitWidth, GridUnitType.Pixel);
-            }
-            else if (_isNormalSidebarVisible)
+            if (_isNormalSidebarVisible)
             {
                 SidebarMinWidth = 200;
                 SidebarWidth = new GridLength(layout.RepositorySidebarWidth, GridUnitType.Pixel);
@@ -610,7 +587,6 @@ namespace SourceGit.Views
         }
 
         private bool _isNormalSidebarVisible = true;
-        private bool _isCommitSearchPanelVisible = false;
         private double _sidebarMinWidth = 200;
         private GridLength _sidebarWidth;
     }

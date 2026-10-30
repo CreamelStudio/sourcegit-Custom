@@ -15,6 +15,8 @@ internal static class PresetChecks
     public static void Run()
     {
         var pref = JsonSerializer.Deserialize("{}", JsonCodeGen.Default.Preferences)!;
+        var migrated = JsonSerializer.Deserialize("""{"Layout":{"RepositorySearchCommitWidth":400,"RepositorySidebarWidth":240}}""", JsonCodeGen.Default.Preferences)!;
+        Check(migrated.Layout.RepositorySidebarWidth == 240, "Ignore the removed large-search width while preserving existing sidebar preferences.");
         pref.PreparePresets();
         Check(pref.Presets.Select(p => p.Slot).SequenceEqual(Enumerable.Range(1, 10)), "Existing preferences gain ten empty preset slots.");
         Check(pref.Presets.All(p => !p.IsSaved), "New slots do not replace tabs until explicitly saved.");

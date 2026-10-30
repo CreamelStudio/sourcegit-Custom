@@ -72,6 +72,15 @@
 
         <TextBlock x:Name="TxtReleaseDate" Margin="0,28,0,0" Foreground="{DynamicResource Brush.FG2}"/>
         <TextBlock x:Name="TxtCopyright" Margin="0,2,0,0" Foreground="{DynamicResource Brush.FG2}"/>
+        <TextBlock Margin="0,12,0,0" FontSize="12" FontWeight="SemiBold" Text="{DynamicResource Text.About.Credits}"/>
+        <TextBlock Margin="0,4,0,0" MaxWidth="340" FontSize="10" TextWrapping="Wrap" Foreground="{DynamicResource Brush.FG2}"
+                   Text="App icons identify the programs they open. Unity and its logos are trademarks of Unity Technologies or its affiliates. SourceGit is not sponsored by or affiliated with Unity."/>
+        <TextBlock Margin="0,4,0,0" MaxWidth="340" FontSize="10" TextWrapping="Wrap" Foreground="{DynamicResource Brush.FG2}"
+                   Text="© 2026 JetBrains s.r.o. IntelliJ IDEA, PyCharm, Rider and other JetBrains product names and logos are JetBrains s.r.o. trademarks."/>
+        <StackPanel Orientation="Horizontal" Margin="0,4,0,0" Spacing="6">
+          <Button Content="Unity" FontSize="11" Padding="6,0" Height="22" Tag="https://unity.com/" Click="OnVisitIconOwner"/>
+          <Button Content="JetBrains" FontSize="11" Padding="6,0" Height="22" Tag="https://www.jetbrains.com/" Click="OnVisitIconOwner"/>
+        </StackPanel>
       </StackPanel>
     </StackPanel>
   </StackPanel>

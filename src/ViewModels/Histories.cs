@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 using Avalonia.Collections;
@@ -16,25 +17,6 @@ namespace SourceGit.ViewModels
         {
             get => _isLoading;
             set => SetProperty(ref _isLoading, value);
-        }
-
-        public bool IsSearchingCommits
-        {
-            get => _isSearchingCommits;
-            set
-            {
-                if (value)
-                    _repo.SelectedViewIndex = 0;
-                else
-                    _searchCommitContext.EndSearch();
-
-                SetProperty(ref _isSearchingCommits, value);
-            }
-        }
-
-        public SearchCommitContext SearchCommitContext
-        {
-            get => _searchCommitContext;
         }
 
         public bool EnableTopoOrder
@@ -107,10 +89,137 @@ namespace SourceGit.ViewModels
             get => _commits;
             set
             {
-                GenerateGraph(value);
-                if (SetProperty(ref _commits, value))
-                    PostCommitsChanged();
+                _unfilteredCommits = value;
+                if (HasCommitFilter)
+                    SearchCommitFilter();
+                else
+                    ApplyCommitList(value);
             }
+        }
+
+        public bool IsCommitFilterVisible
+        {
+            get => _isCommitFilterVisible;
+            set
+            {
+                if (SetProperty(ref _isCommitFilterVisible, value) && !value)
+                    CommitFilterText = string.Empty;
+            }
+        }
+
+        public string CommitFilterText
+        {
+            get => _commitFilterText;
+            set
+            {
+                if (SetProperty(ref _commitFilterText, value ?? string.Empty))
+                    QueueCommitFilter(250);
+            }
+        }
+
+        public int CommitFilterField
+        {
+            get => _commitFilterField;
+            set
+            {
+                if (SetProperty(ref _commitFilterField, value))
+                    SearchCommitFilter();
+            }
+        }
+
+        public bool HasCommitFilter => !string.IsNullOrWhiteSpace(_commitFilterText);
+        public bool CommitFilterCurrentBranchOnly
+        {
+            get => _commitFilterCurrentBranchOnly;
+            set
+            {
+                if (SetProperty(ref _commitFilterCurrentBranchOnly, value))
+                    SearchCommitFilter();
+            }
+        }
+        public string CommitFilterStatus => _isFilteringCommits ? App.Text("Histories.Filter.Searching") :
+            !string.IsNullOrEmpty(_commitFilterError) ? App.Text("Histories.Filter.Error") :
+            !HasCommitFilter ? string.Empty : App.Text(_commits.Count >= 1000 ? "Histories.Filter.Limit" : "Histories.Filter.Count", _commits.Count);
+
+        public void SearchCommitFilter() => QueueCommitFilter(0);
+        public void EndCommitFilter() => _commitFilterCancellation?.Cancel();
+        public string CommitFilterErrorDetails => _commitFilterError;
+
+        private void ApplyCommitList(List<Models.Commit> commits)
+        {
+            GenerateGraph(commits);
+            if (SetProperty(ref _commits, commits, nameof(Commits)))
+                PostCommitsChanged();
+            OnPropertyChanged(nameof(CommitFilterStatus));
+        }
+
+        private void QueueCommitFilter(int delay)
+        {
+            _commitFilterCancellation?.Cancel();
+            _isFilteringCommits = false;
+            _commitFilterError = string.Empty;
+            OnPropertyChanged(nameof(CommitFilterErrorDetails));
+            OnPropertyChanged(nameof(HasCommitFilter));
+            if (!HasCommitFilter)
+            {
+                ApplyCommitList(_unfilteredCommits);
+                return;
+            }
+
+            var filter = _commitFilterText.Trim();
+            var method = _commitFilterField switch
+            {
+                1 => Models.CommitSearchMethod.ByMessage,
+                2 => Models.CommitSearchMethod.BySHA,
+                3 => Models.CommitSearchMethod.ByAuthor,
+                4 => Models.CommitSearchMethod.ByPath,
+                5 => Models.CommitSearchMethod.ByContent,
+                _ => Models.CommitSearchMethod.All,
+            };
+            _commitFilterCancellation = new();
+            var onlyCurrentBranch = _commitFilterCurrentBranchOnly;
+            var token = _commitFilterCancellation.Token;
+            _isFilteringCommits = true;
+            ApplyCommitList([]);
+            Task.Run(async () =>
+            {
+                try
+                {
+                    if (delay > 0)
+                        await Task.Delay(delay, token).ConfigureAwait(false);
+                    var commits = await Commands.QueryCommits.SearchAsync(_repo.FullPath, filter, method, onlyCurrentBranch, token).ConfigureAwait(false);
+                    if (commits.Count > 0)
+                    {
+                        var oldest = ulong.MaxValue;
+                        foreach (var commit in commits)
+                            oldest = Math.Min(oldest, commit.CommitterTime);
+                        var merged = await new Commands.QueryCurrentBranchCommitHashes(_repo.FullPath, oldest) { CancellationToken = token }
+                            .GetResultAsync().ConfigureAwait(false);
+                        foreach (var commit in commits)
+                            commit.IsMerged = merged.Contains(commit.SHA);
+                    }
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        if (token.IsCancellationRequested)
+                            return;
+                        _isFilteringCommits = false;
+                        ApplyCommitList(commits);
+                    });
+                }
+                catch (OperationCanceledException) when (token.IsCancellationRequested) { }
+                catch (Exception ex)
+                {
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        if (token.IsCancellationRequested)
+                            return;
+                        _isFilteringCommits = false;
+                        _commitFilterError = ex.Message;
+                        OnPropertyChanged(nameof(CommitFilterStatus));
+                        OnPropertyChanged(nameof(CommitFilterErrorDetails));
+                    });
+                }
+            }, token);
         }
 
         public Models.CommitGraph Graph
@@ -232,7 +341,6 @@ namespace SourceGit.ViewModels
         {
             _repo = repo;
             _commitDetailSharedData = new CommitDetailSharedData();
-            _searchCommitContext = new SearchCommitContext(repo.FullPath, this);
         }
 
         public bool HasShowFlag(Models.HistoryShowFlags flag)
@@ -473,7 +581,6 @@ namespace SourceGit.ViewModels
             var head = _commits.Find(x => x.IsCurrentHead);
             if (head == null)
             {
-                _searchCommitContext.Selected = null;
                 head = await new Commands.QuerySingleCommit(_repo.FullPath, "HEAD").GetResultAsync();
                 if (head != null)
                     DetailContext = new RevisionCompare(_repo, commit, head);
@@ -526,18 +633,11 @@ namespace SourceGit.ViewModels
 
             if (_selectedCommits.Count == 0)
             {
-                _searchCommitContext.Selected = null;
                 DetailContext = Models.Null.Instance;
             }
             else if (_selectedCommits.Count == 1)
             {
                 var c = _selectedCommits[0];
-                if (_isSearchingCommits)
-                {
-                    if (_searchCommitContext.Selected == null || !_searchCommitContext.Selected.SHA.Equals(c.SHA, StringComparison.Ordinal))
-                        _searchCommitContext.Selected = _searchCommitContext.Results?.Find(x => x.SHA.Equals(c.SHA, StringComparison.Ordinal));
-                }
-
                 if (_detailContext is CommitDetail detail)
                     detail.Commit = c;
                 else
@@ -545,7 +645,6 @@ namespace SourceGit.ViewModels
             }
             else if (_selectedCommits.Count == 2)
             {
-                _searchCommitContext.Selected = null;
 
                 if (_detailContext is RevisionCompare compare)
                     compare.SetTargets(_selectedCommits[1], _selectedCommits[0]);
@@ -554,7 +653,6 @@ namespace SourceGit.ViewModels
             }
             else
             {
-                _searchCommitContext.Selected = null;
                 DetailContext = new Models.Count(_selectedCommits.Count);
             }
 
@@ -583,14 +681,19 @@ namespace SourceGit.ViewModels
         private CommitDetailSharedData _commitDetailSharedData = null;
         private bool _isLoading = true;
         private List<Models.Commit> _commits = [];
+        private List<Models.Commit> _unfilteredCommits = [];
+        private bool _isCommitFilterVisible;
+        private string _commitFilterText = string.Empty;
+        private int _commitFilterField;
+        private bool _commitFilterCurrentBranchOnly;
+        private CancellationTokenSource _commitFilterCancellation;
+        private bool _isFilteringCommits;
+        private string _commitFilterError = string.Empty;
         private Models.CommitGraph _graph = null;
         private List<Models.Commit> _selectedCommits = [];
         private Models.Bisect _bisect = null;
         private object _detailContext = Models.Null.Instance;
         private bool _ignoreSelectionChange = false;
-
-        private bool _isSearchingCommits = false;
-        private SearchCommitContext _searchCommitContext = null;
 
         private GridLength _leftArea = new(1, GridUnitType.Star);
         private GridLength _rightArea = new(1, GridUnitType.Star);

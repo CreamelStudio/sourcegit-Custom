@@ -131,7 +131,6 @@ namespace SourceGit.ViewModels
                 UseSideBySideDiff == pref.UseSideBySideDiff && EnableDiffViewWordWrap == pref.EnableDiffViewWordWrap &&
                 (Layout == null ||
                     Math.Abs(Layout.RepositorySidebarWidth - pref.Layout.RepositorySidebarWidth) < 0.5 &&
-                    Math.Abs(Layout.RepositorySearchCommitWidth - pref.Layout.RepositorySearchCommitWidth) < 0.5 &&
                     Layout.IsSidebarCollapsedInLocalChanges == pref.Layout.IsSidebarCollapsedInLocalChanges &&
                     Layout.WorkingCopyLeftWidth == pref.Layout.WorkingCopyLeftWidth &&
                     Layout.StashesLeftWidth == pref.Layout.StashesLeftWidth &&
@@ -150,7 +149,6 @@ namespace SourceGit.ViewModels
                 LauncherPositionY = window.LauncherPositionY,
                 LauncherWindowState = window.LauncherWindowState,
                 RepositorySidebarWidth = source.RepositorySidebarWidth,
-                RepositorySearchCommitWidth = source.RepositorySearchCommitWidth,
                 IsSidebarCollapsedInLocalChanges = source.IsSidebarCollapsedInLocalChanges,
                 WorkingCopyLeftWidth = source.WorkingCopyLeftWidth,
                 StashesLeftWidth = source.StashesLeftWidth,

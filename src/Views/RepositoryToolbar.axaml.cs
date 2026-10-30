@@ -8,6 +8,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Platform.Storage;
 using Avalonia.VisualTree;
 
 namespace SourceGit.Views
@@ -19,53 +20,186 @@ namespace SourceGit.Views
             InitializeComponent();
         }
 
-        private void OpenUnity(object sender, RoutedEventArgs e)
+        private void OpenProject(object sender, RoutedEventArgs e)
         {
             if (sender is not Button button || DataContext is not ViewModels.Repository repo)
                 return;
-            if (repo.UnityProjects.Count == 1)
-                LaunchUnity(repo, repo.UnityProjects[0]);
-            else
-            {
-                var menu = new ContextMenu();
-                foreach (var project in repo.UnityProjects)
-                {
-                    var item = new MenuItem { Header = $"{Path.GetRelativePath(repo.FullPath, project.FullPath)} · {project.EditorVersion}" };
-                    ToolTip.SetTip(item, project.FullPath);
-                    item.Click += (_, ev) =>
-                    {
-                        LaunchUnity(repo, project);
-                        ev.Handled = true;
-                    };
-                    menu.Items.Add(item);
-                }
-                menu.Open(button);
-            }
-            e.Handled = true;
-        }
 
-        private static void LaunchUnity(ViewModels.Repository repo, Models.UnityProject selected)
-        {
+            e.Handled = true;
+            var opener = repo.ProjectOpener;
+            if (opener == null && repo.HasUnityProjects)
+                opener = new Models.ProjectOpener { Name = "Unity", IsUnity = true };
+            if (opener == null || opener.IsUnity && !repo.HasUnityProjects)
+            {
+                ShowProjectOpeners(button, repo);
+                return;
+            }
+
             try
             {
-                var project = Models.UnityProject.Read(selected.FullPath);
-                if (project == null)
-                {
-                    repo.SendNotification(App.Text("Repository.UnityMissing"), true);
-                    return;
-                }
-                var editor = project.FindEditor(Models.UnityProject.EditorRoots());
-                if (editor == null)
-                {
-                    repo.SendNotification(App.Text("Repository.UnityEditorMissing", project.EditorVersion), true);
-                    return;
-                }
-                using var process = Process.Start(project.CreateStartInfo(editor));
+                using var process = Process.Start(opener.CreateStartInfo(repo.FullPath));
             }
             catch (Exception ex)
             {
-                repo.SendNotification(App.Text("Repository.UnityLaunchFailed", ex.Message), true);
+                repo.SendNotification(App.Text("Repository.ProjectOpener.Failed", ex.Message), true);
+                ShowProjectOpeners(button, repo);
             }
+        }
+
+        private void SelectProjectOpener(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && DataContext is ViewModels.Repository repo)
+                ShowProjectOpeners(button, repo);
+            e.Handled = true;
+        }
+
+        private void ShowProjectOpeners(Button button, ViewModels.Repository repo)
+        {
+            var menu = new ContextMenu { Placement = PlacementMode.BottomEdgeAlignedLeft };
+            if (repo.HasUnityProjects)
+            {
+                var project = repo.UnityProjects[0];
+                var unity = new MenuItem { Header = "Unity", Icon = CreateProgramMenuIcon(() => project.FindEditor(Models.UnityProject.EditorRoots())) };
+                unity.Click += (_, _) => repo.SetProjectOpener(new Models.ProjectOpener { Name = "Unity", IsUnity = true });
+                menu.Items.Add(unity);
+            }
+
+            foreach (var tool in Native.OS.ExternalTools)
+            {
+                if (!File.Exists(tool.ExecFile))
+                    continue;
+                try
+                {
+                    var item = new MenuItem { Header = tool.Name, Icon = CreateProgramMenuIcon(() => tool.ExecFile) };
+                    var options = tool.MakeLaunchOptions(repo.FullPath);
+                    if (options is { Count: > 0 })
+                    {
+                        foreach (var option in options)
+                        {
+                            if (option.Target == null)
+                                continue;
+                            var target = option.Target;
+                            var child = new MenuItem { Header = option.Title };
+                            child.Click += (_, _) => SaveProjectOpener(repo, tool, target);
+                            item.Items.Add(child);
+                        }
+                        if (tool.SupportOpenFolder)
+                        {
+                            var folder = new MenuItem { Header = App.Text("Repository.ProjectOpener.CurrentFolder") };
+                            folder.Click += (_, _) => SaveProjectOpener(repo, tool, repo.FullPath);
+                            item.Items.Add(folder);
+                        }
+                        if (item.Items.Count == 0)
+                            continue;
+                    }
+                    else if (tool.SupportOpenFolder)
+                    {
+                        item.Click += (_, _) => SaveProjectOpener(repo, tool, repo.FullPath);
+                    }
+                    else
+                    {
+                        // A solution-only IDE can still be connected to a file selected by the user.
+                        item.Click += async (_, _) => await PickProjectTargetAsync(repo, tool);
+                    }
+                    menu.Items.Add(item);
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    ToolTip.SetTip(button, App.Text("Repository.ProjectOpener.Failed", ex.Message));
+                }
+            }
+
+            menu.Items.Add(new MenuItem { Header = "-" });
+            var custom = new MenuItem { Header = App.Text("Repository.ProjectOpener.ChooseProgram") };
+            custom.Click += async (_, _) =>
+            {
+                try
+                {
+                    var files = await TopLevel.GetTopLevel(this)!.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+                    {
+                        Title = App.Text("Repository.ProjectOpener.ChooseProgram"), AllowMultiple = false,
+                        FileTypeFilter = [new FilePickerFileType("Program") { Patterns = OperatingSystem.IsWindows() ? ["*.exe"] : ["*"] }],
+                    });
+                    if (files.Count == 1)
+                    {
+                        var executable = files[0].Path.LocalPath;
+                        if (!File.Exists(executable))
+                            throw new FileNotFoundException("Program not found.", executable);
+                        var name = FileVersionInfo.GetVersionInfo(executable).ProductName;
+                        var tool = new Models.ExternalTool(string.IsNullOrWhiteSpace(name) ? Path.GetFileNameWithoutExtension(executable) : name, executable, null, true);
+                        SaveProjectOpener(repo, tool, repo.FullPath);
+                    }
+                }
+                catch (Exception ex) { repo.SendNotification(App.Text("Repository.ProjectOpener.Failed", ex.Message), true); }
+            };
+            menu.Items.Add(custom);
+
+            var canChooseTarget = repo.ProjectOpener is { IsUnity: false };
+            var chooseFolder = new MenuItem { Header = App.Text("Repository.ProjectOpener.ChooseFolder"), IsEnabled = canChooseTarget };
+            chooseFolder.Click += async (_, _) => await PickProjectTargetAsync(repo, null, true);
+            menu.Items.Add(chooseFolder);
+            var chooseFile = new MenuItem { Header = App.Text("Repository.ProjectOpener.ChooseFile"), IsEnabled = canChooseTarget };
+            chooseFile.Click += async (_, _) => await PickProjectTargetAsync(repo);
+            menu.Items.Add(chooseFile);
+            var clear = new MenuItem { Header = App.Text("Repository.ProjectOpener.Reset"), IsEnabled = repo.ProjectOpener != null };
+            clear.Click += (_, _) => repo.SetProjectOpener(null);
+            menu.Items.Add(clear);
+            menu.Items.Add(new MenuItem { Header = "-" });
+            var other = new MenuItem { Header = App.Text("Repository.ProjectOpener.Other") };
+            other.Click += (_, e) =>
+            {
+                menu.Close();
+                OpenWithExternalTools(button, e);
+            };
+            menu.Items.Add(other);
+            menu.Open(button);
+        }
+
+        private static void SaveProjectOpener(ViewModels.Repository repo, Models.ExternalTool tool, string target)
+        {
+            try { repo.SetProjectOpener(Models.ProjectOpener.FromTool(repo.FullPath, tool, target)); }
+            catch (Exception ex) { repo.SendNotification(App.Text("Repository.ProjectOpener.Failed", ex.Message), true); }
+        }
+
+        private static Image CreateProgramMenuIcon(Func<string> executable)
+        {
+            var image = new Image { Width = 16, Height = 16 };
+            System.Threading.Tasks.Task.Run(() =>
+            {
+                var icon = Native.OS.GetProgramIcon(executable());
+                Avalonia.Threading.Dispatcher.UIThread.Post(() => image.Source = icon);
+            });
+            return image;
+        }
+
+        private async System.Threading.Tasks.Task PickProjectTargetAsync(ViewModels.Repository repo, Models.ExternalTool tool = null, bool folder = false)
+        {
+            try
+            {
+                var storage = TopLevel.GetTopLevel(this)!.StorageProvider;
+                var title = App.Text(folder ? "Repository.ProjectOpener.ChooseFolder" : "Repository.ProjectOpener.ChooseFile");
+                var location = await storage.TryGetFolderFromPathAsync(repo.FullPath);
+                string target;
+                if (folder)
+                {
+                    var selected = await storage.OpenFolderPickerAsync(new FolderPickerOpenOptions { Title = title, AllowMultiple = false, SuggestedStartLocation = location });
+                    if (selected.Count != 1)
+                        return;
+                    target = selected[0].Path.LocalPath;
+                }
+                else
+                {
+                    var selected = await storage.OpenFilePickerAsync(new FilePickerOpenOptions { Title = title, AllowMultiple = false, SuggestedStartLocation = location });
+                    if (selected.Count != 1)
+                        return;
+                    target = selected[0].Path.LocalPath;
+                }
+                if (tool != null)
+                    SaveProjectOpener(repo, tool, target);
+                else if (repo.ProjectOpener is { IsUnity: false } current)
+                    repo.SetProjectOpener(new Models.ProjectOpener { Name = current.Name, Executable = current.Executable, Target = Models.ProjectOpener.RelativeTarget(repo.FullPath, target) });
+            }
+            catch (Exception ex) { repo.SendNotification(App.Text("Repository.ProjectOpener.Failed", ex.Message), true); }
         }
 
         private void OpenWithExternalTools(object sender, RoutedEventArgs ev)
@@ -118,7 +252,7 @@ namespace SourceGit.Views
 
                         var item = new MenuItem();
                         item.Header = App.Text("Repository.OpenIn", dupTool.Name);
-                        item.Icon = new Image { Width = 16, Height = 16, Source = dupTool.IconImage };
+                        item.Icon = CreateProgramMenuIcon(() => dupTool.ExecFile);
 
                         var options = dupTool.MakeLaunchOptions(fullpath);
                         var count = (dupTool.SupportOpenFolder ? 1 : 0) + (options?.Count ?? 0);

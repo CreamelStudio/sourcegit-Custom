@@ -573,12 +573,6 @@
               </Grid>
             </Grid>
 
-            <!-- Commit Search Panel -->
-            <v:CommitSearchView Grid.Column="0"
-                                Margin="6,0,4,0"
-                                DataContext="{Binding Histories.SearchCommitContext, Mode=OneWay}"
-                                IsVisible="{Binding #ThisControl.IsCommitSearchPanelVisible, Mode=OneWay}"/>
-
             <!-- Splitter -->
             <GridSplitter Grid.Column="1"
                           Width="3" MinWidth="3" MaxWidth="3"
@@ -586,14 +580,8 @@
                           Background="Transparent"
                           BorderThickness="0,0,1,0"
                           BorderBrush="{DynamicResource Brush.Border0}"
-                          Focusable="False">
-              <GridSplitter.IsVisible>
-                <MultiBinding Converter="{x:Static BoolConverters.Or}">
-                  <Binding ElementName="ThisControl" Path="IsCommitSearchPanelVisible"/>
-                  <Binding ElementName="ThisControl" Path="IsNormalSidebarVisible"/>
-                </MultiBinding>
-              </GridSplitter.IsVisible>
-            </GridSplitter>
+                          Focusable="False"
+                          IsVisible="{Binding #ThisControl.IsNormalSidebarVisible}"/>
 
             <!-- Right Page -->
             <Grid Grid.Column="2">

@@ -15,15 +15,16 @@ internal static class UnityChecks
             CreateProject(projectPath, "2022.3.62f3");
             var project = UnityProject.Read(projectPath)!;
             Check(project != null && project.EditorVersion == "2022.3.62f3" && project.FullPath == Path.GetFullPath(projectPath), "Read the project's exact Unity version.");
-            Check(UnityProject.Find(projectPath, []).Count == 1, "Detect a cloned Unity repository itself.");
+            Check(UnityProject.Find(projectPath).Count == 1, "Detect a cloned Unity repository itself.");
             Check(UnityProject.Read(root) == null, "Ordinary repositories must not show the Unity button.");
 
             var server = Path.Combine(root, "server");
             CreateProject(Path.Combine(server, "Client"), "2022.3.62f3");
             CreateProject(Path.Combine(server, "Mobile"), "6000.3.18f1");
             CreateProject(Path.Combine(root, "outside"), "6000.3.18f1");
-            var projects = UnityProject.Find(server, ["Client", "Mobile", "Mobile", "../outside", Path.Combine(root, "outside")]);
-            Check(projects.Count == 2 && projects.Select(p => p.EditorVersion).Distinct().Count() == 2, "Detect initialized Client and declared Unity submodules once, excluding paths outside the repository.");
+            Check(UnityProject.Find(server).Count == 0, "A server repository must not inherit its Client or submodule Unity icon.");
+            Check(UnityProject.Find(Path.Combine(server, "Client")).Count == 1 && UnityProject.Find(Path.Combine(server, "Mobile")).Count == 1,
+                "Opening a Unity Client or submodule itself still enables its Unity launcher.");
 
             var incomplete = Path.Combine(root, "incomplete");
             Directory.CreateDirectory(Path.Combine(incomplete, "ProjectSettings"));
@@ -53,7 +54,7 @@ internal static class UnityChecks
             Check(UnityProject.ReadHubInstallPath(hubSetting) == editors, "Read Unity Hub's custom editor install folder.");
             File.WriteAllText(hubSetting, "broken json");
             Check(UnityProject.ReadHubInstallPath(hubSetting) == null && UnityProject.ReadHubInstallPath(Path.Combine(root, "missing.json")) == null, "Ignore missing or invalid Hub settings safely.");
-            Console.WriteLine("Unity checks passed: root/Client/submodule detection, exact versions, path containment, Hub folders and safe launch arguments. No Unity process started.");
+            Console.WriteLine("Unity checks passed: current-project detection, parent/server exclusion, exact versions, Hub folders and safe launch arguments. No Unity process started.");
         }
         finally
         {

@@ -158,6 +158,13 @@ namespace SourceGit.Native
             ExternalTools = _backend.FindExternalTools();
         }
 
+        public static Avalonia.Media.Imaging.Bitmap GetProgramIcon(string executable)
+        {
+            if (OperatingSystem.IsWindows())
+                return WindowsProgramIcon.Read(executable);
+            return null;
+        }
+
         public static void SetupForWindow(Window window)
         {
             _backend.SetupWindow(window);

@@ -1,10 +1,13 @@
 using System;
 
+using System.Linq;
+
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.VisualTree;
 
 namespace SourceGit.Views
 {
@@ -284,8 +287,9 @@ namespace SourceGit.Views
                             vm.CommandPalette = new ViewModels.RepositoryCommandPalette(repo);
                             e.Handled = true;
                             return;
-                        case Key.F when e.KeyModifiers.HasFlag(KeyModifiers.Shift):
-                            repo.Histories.IsSearchingCommits = !repo.Histories.IsSearchingCommits;
+                        case Key.F when e.KeyModifiers == cmdKey && repo.SelectedViewIndex == 0 && !e.Handled:
+                            this.GetVisualDescendants().OfType<Histories>()
+                                .FirstOrDefault(view => ReferenceEquals(view.DataContext, repo.Histories))?.OpenCommitFilter();
                             e.Handled = true;
                             return;
                         case Key.B when e.KeyModifiers.HasFlag(KeyModifiers.Shift):

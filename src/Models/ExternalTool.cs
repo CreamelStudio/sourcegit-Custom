@@ -6,7 +6,6 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 
 using Avalonia.Media.Imaging;
-using Avalonia.Platform;
 
 namespace SourceGit.Models
 {
@@ -16,37 +15,28 @@ namespace SourceGit.Models
         {
             public string Title { get; set; }
             public string Args { get; set; }
+            public string Target { get; }
 
-            public LaunchOption(string title, string args)
+            public LaunchOption(string title, string args, string target = null)
             {
                 Title = title;
                 Args = args;
+                Target = target;
             }
         }
 
         public string Name { get; }
         public string ExecFile { get; }
-        public Bitmap IconImage { get; }
+        public Bitmap IconImage => Native.OS.GetProgramIcon(ExecFile);
         public bool SupportOpenFolder { get; }
 
-        public ExternalTool(string name, string icon, string execFile, Func<string, List<LaunchOption>> optionsGenerator, bool supportOpenFolder)
+        public ExternalTool(string name, string execFile, Func<string, List<LaunchOption>> optionsGenerator, bool supportOpenFolder)
         {
             Name = name;
             ExecFile = execFile;
             SupportOpenFolder = supportOpenFolder;
 
             _optionsGenerator = optionsGenerator;
-
-            try
-            {
-                var asset = AssetLoader.Open(new Uri($"avares://SourceGit/Resources/Images/ExternalToolIcons/{icon}.png",
-                    UriKind.RelativeOrAbsolute));
-                IconImage = new Bitmap(asset);
-            }
-            catch
-            {
-                // ignore
-            }
         }
 
         public List<LaunchOption> MakeLaunchOptions(string repo)
@@ -138,51 +128,51 @@ namespace SourceGit.Models
             _customization ??= new ExternalToolCustomization();
         }
 
-        public void TryAdd(string name, string icon, Func<string> finder, Func<string, List<ExternalTool.LaunchOption>> optionsGenerator = null, bool supportOpenFolder = true)
+        public void TryAdd(string name, Func<string> finder, Func<string, List<ExternalTool.LaunchOption>> optionsGenerator = null, bool supportOpenFolder = true)
         {
             if (_customization.Excludes.Contains(name))
                 return;
 
             if (_customization.Tools.TryGetValue(name, out var customPath) && File.Exists(customPath))
             {
-                Tools.Add(new ExternalTool(name, icon, customPath, optionsGenerator, supportOpenFolder));
+                Tools.Add(new ExternalTool(name, customPath, optionsGenerator, supportOpenFolder));
             }
             else
             {
                 var path = finder();
                 if (!string.IsNullOrEmpty(path) && File.Exists(path))
-                    Tools.Add(new ExternalTool(name, icon, path, optionsGenerator, supportOpenFolder));
+                    Tools.Add(new ExternalTool(name, path, optionsGenerator, supportOpenFolder));
             }
         }
 
         public void VSCode(Func<string> platformFinder)
         {
-            TryAdd("Visual Studio Code", "vscode", platformFinder, GenerateVSCodeLaunchOptions);
+            TryAdd("Visual Studio Code", platformFinder, GenerateVSCodeLaunchOptions);
         }
 
         public void VSCodeInsiders(Func<string> platformFinder)
         {
-            TryAdd("Visual Studio Code - Insiders", "vscode_insiders", platformFinder, GenerateVSCodeLaunchOptions);
+            TryAdd("Visual Studio Code - Insiders", platformFinder, GenerateVSCodeLaunchOptions);
         }
 
         public void VSCodium(Func<string> platformFinder)
         {
-            TryAdd("VSCodium", "codium", platformFinder, GenerateVSCodeLaunchOptions);
+            TryAdd("VSCodium", platformFinder, GenerateVSCodeLaunchOptions);
         }
 
         public void SublimeText(Func<string> platformFinder)
         {
-            TryAdd("Sublime Text", "sublime_text", platformFinder);
+            TryAdd("Sublime Text", platformFinder);
         }
 
         public void Zed(Func<string> platformFinder)
         {
-            TryAdd("Zed", "zed", platformFinder);
+            TryAdd("Zed", platformFinder);
         }
 
         public void Cursor(Func<string> platformFinder)
         {
-            TryAdd("Cursor", "cursor", platformFinder);
+            TryAdd("Cursor", platformFinder);
         }
 
         public void FindJetBrainsFromToolbox(Func<string> platformFinder)
@@ -202,7 +192,6 @@ namespace SourceGit.Models
 
                         Tools.Add(new ExternalTool(
                             $"{tool.DisplayName} {tool.DisplayVersion}",
-                            $"JetBrains/{tool.ProductCode}",
                             Path.Combine(tool.InstallLocation, tool.LaunchCommand),
                             null,
                             true));
@@ -228,7 +217,7 @@ namespace SourceGit.Models
                 if (f.EndsWith(".code-workspace", StringComparison.OrdinalIgnoreCase))
                 {
                     var display = f.Substring(prefixLen).TrimStart(Path.DirectorySeparatorChar);
-                    options.Add(new(display, f.Quoted()));
+                    options.Add(new(display, f.Quoted(), f));
                 }
             }, 2);
             return options;

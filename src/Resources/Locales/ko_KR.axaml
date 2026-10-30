@@ -4,6 +4,24 @@
   </ResourceDictionary.MergedDictionaries>
 
   <x:String x:Key="Text.Repository.OpenUnity" xml:space="preserve">Unity 프로젝트 열기</x:String>
+  <x:String x:Key="Text.About.Credits" xml:space="preserve">크레딧</x:String>
+  <x:String x:Key="Text.Repository.ProjectOpener.Select" xml:space="preserve">이 저장소의 프로젝트 연결 프로그램 선택</x:String>
+  <x:String x:Key="Text.Repository.ProjectOpener.Open" xml:space="preserve">{0}에서 열기 · {1}</x:String>
+  <x:String x:Key="Text.Repository.ProjectOpener.CurrentFolder" xml:space="preserve">현재 폴더</x:String>
+  <x:String x:Key="Text.Repository.ProjectOpener.ChooseProgram" xml:space="preserve">다른 프로그램 직접 지정…</x:String>
+  <x:String x:Key="Text.Repository.ProjectOpener.ChooseFolder" xml:space="preserve">열 폴더 선택…</x:String>
+  <x:String x:Key="Text.Repository.ProjectOpener.ChooseFile" xml:space="preserve">열 파일 선택…</x:String>
+  <x:String x:Key="Text.Repository.ProjectOpener.Reset" xml:space="preserve">연결 프로그램 초기화</x:String>
+  <x:String x:Key="Text.Repository.ProjectOpener.Other" xml:space="preserve">기타 열기 옵션…</x:String>
+  <x:String x:Key="Text.Repository.ProjectOpener.Failed" xml:space="preserve">선택한 프로그램과 열 대상을 확인해 주세요: {0}</x:String>
+  <x:String x:Key="Text.Histories.Filter.Placeholder" xml:space="preserve">메시지·해시·작성자로 커밋 필터…</x:String>
+  <x:String x:Key="Text.Histories.Filter.All" xml:space="preserve">통합</x:String>
+  <x:String x:Key="Text.Histories.Filter.Searching" xml:space="preserve">검색 중…</x:String>
+  <x:String x:Key="Text.Histories.Filter.Error" xml:space="preserve">검색 실패</x:String>
+  <x:String x:Key="Text.Histories.Filter.Count" xml:space="preserve">{0}개</x:String>
+  <x:String x:Key="Text.Histories.Filter.Limit" xml:space="preserve">{0}개까지 표시</x:String>
+  <x:String x:Key="Text.Histories.Filter.Close" xml:space="preserve">필터 닫기 (Esc)</x:String>
+  <x:String x:Key="Text.Hotkeys.Repo.ToggleSearchCommits" xml:space="preserve">커밋 필터 열기</x:String>
   <x:String x:Key="Text.Repository.UnityMissing" xml:space="preserve">Unity 프로젝트를 찾을 수 없습니다. 저장소를 새로고침한 뒤 다시 시도하세요.</x:String>
   <x:String x:Key="Text.Repository.UnityEditorMissing" xml:space="preserve">Unity Hub의 설치 폴더에서 Unity {0}을 찾지 못했습니다. Hub에서 같은 버전을 설치한 뒤 다시 시도하세요.</x:String>
   <x:String x:Key="Text.Repository.UnityLaunchFailed" xml:space="preserve">Unity를 열지 못했습니다: {0}</x:String>

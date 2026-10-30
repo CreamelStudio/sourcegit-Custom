@@ -23,7 +23,35 @@
       <ColumnDefinition Width="{Binding RightArea, Mode=TwoWay}" MinWidth="100"/>
     </v:HistoriesLayout.ColumnDefinitions>
 
-    <Grid Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3">
+    <Grid Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" RowDefinitions="Auto,*">
+      <Border Grid.Row="0" IsVisible="{Binding IsCommitFilterVisible}" Padding="4,2" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource Brush.Border0}">
+        <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto" Height="28">
+          <Path Grid.Column="0" Width="12" Height="12" Margin="4,0,8,0" Data="{StaticResource Icons.Search}"/>
+          <TextBox x:Name="CommitFilterBox" Grid.Column="1" Height="24" MinHeight="24" Padding="4,0"
+                   Text="{Binding CommitFilterText, Mode=TwoWay}" Watermark="{DynamicResource Text.Histories.Filter.Placeholder}"
+                   VerticalContentAlignment="Center" KeyDown="OnCommitFilterKeyDown"
+                   AutomationProperties.Name="{DynamicResource Text.Histories.Filter.Placeholder}"/>
+          <ComboBox Grid.Column="2" Width="82" Height="24" MinHeight="24" Margin="4,0" Padding="6,0"
+                    SelectedIndex="{Binding CommitFilterField, Mode=TwoWay}" AutomationProperties.Name="{DynamicResource Text.Repository.Search.Method}">
+            <ComboBox.Items>
+              <TextBlock Text="{DynamicResource Text.Histories.Filter.All}"/>
+              <TextBlock Text="{DynamicResource Text.Repository.Search.ByMessage}"/>
+              <TextBlock Text="{DynamicResource Text.Repository.Search.BySHA}"/>
+              <TextBlock Text="{DynamicResource Text.Repository.Search.ByAuthor}"/>
+              <TextBlock Text="{DynamicResource Text.Repository.Search.ByPath}"/>
+              <TextBlock Text="{DynamicResource Text.Repository.Search.ByContent}"/>
+            </ComboBox.Items>
+          </ComboBox>
+          <CheckBox Grid.Column="3" IsChecked="{Binding CommitFilterCurrentBranchOnly, Mode=TwoWay}" Margin="4,0" MinHeight="24" FontSize="11"
+                    Content="{DynamicResource Text.Repository.Search.InCurrentBranch}"/>
+          <TextBlock Grid.Column="4" Text="{Binding CommitFilterStatus}" ToolTip.Tip="{Binding CommitFilterErrorDetails}" Margin="4,0" VerticalAlignment="Center" FontSize="11"/>
+          <Button Grid.Column="5" Classes="icon_button" Width="24" Click="OnCloseCommitFilter"
+                  ToolTip.Tip="{DynamicResource Text.Histories.Filter.Close}" AutomationProperties.Name="{DynamicResource Text.Histories.Filter.Close}">
+            <Path Width="10" Height="10" Data="{StaticResource Icons.Clear}"/>
+          </Button>
+        </Grid>
+      </Border>
+      <Grid Grid.Row="1">
       <v:HistoriesCommitList x:Name="CommitListContainer"
                              Classes="static_scrollbar"
                              ScrollViewer.AllowAutoHide="False"
@@ -253,12 +281,12 @@
                     Margin="4,0,0,0"
                     VerticalAlignment="Center"
                     Spacing="6">
-          <ToggleButton Classes="line_path" Width="18" IsChecked="{Binding IsSearchingCommits, Mode=TwoWay}">
+          <ToggleButton Classes="line_path" Width="18" IsChecked="{Binding IsCommitFilterVisible, Mode=TwoWay}" Click="OnInlineFilterToggled">
             <ToolTip.Tip>
               <TextBlock>
                 <Run Text="{DynamicResource Text.Repository.Search.ToolTip}" Foreground="{DynamicResource Brush.FG1}"/>
                 <Run Text=" "/>
-                <Run Text="{OnPlatform Ctrl+Shift+F, macOS=⌘+⇧+F}" FontSize="11" Foreground="{DynamicResource MenuFlyoutItemKeyboardAcceleratorTextForeground}"/>
+                <Run Text="{OnPlatform Ctrl+F, macOS=⌘+F}" FontSize="11" Foreground="{DynamicResource MenuFlyoutItemKeyboardAcceleratorTextForeground}"/>
               </TextBlock>
             </ToolTip.Tip>
             <Path Width="14" Height="14" Data="{StaticResource Icons.Search}"/>
@@ -299,6 +327,7 @@
       </Border>
 
       <v:LoadingIcon Width="48" Height="48" HorizontalAlignment="Center" VerticalAlignment="Center" IsVisible="{Binding IsLoading}"/>
+      </Grid>
     </Grid>
 
     <GridSplitter Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"

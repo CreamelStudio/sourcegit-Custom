@@ -41,12 +41,6 @@ namespace SourceGit.ViewModels
             set => SetProperty(ref _repositorySidebarWidth, value);
         }
 
-        public double RepositorySearchCommitWidth
-        {
-            get => _repositorySearchCommitWidth;
-            set => SetProperty(ref _repositorySearchCommitWidth, value);
-        }
-
         public bool IsSidebarCollapsedInLocalChanges
         {
             get => _isSidebarCollapsedInLocalChanges;
@@ -83,6 +77,5 @@ namespace SourceGit.ViewModels
         private GridLength _commitDetailFilesLeftWidth = new GridLength(256, GridUnitType.Pixel);
         private bool _isSidebarCollapsedInLocalChanges = false;
         private double _repositorySidebarWidth = 250;
-        private double _repositorySearchCommitWidth = 250;
     }
 }

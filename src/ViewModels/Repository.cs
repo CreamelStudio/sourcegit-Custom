@@ -235,9 +235,56 @@ namespace SourceGit.ViewModels
 
         public bool HasUnityProjects => UnityProjects.Count > 0;
 
+        public Models.ProjectOpener ProjectOpener => _settings?.ProjectOpener;
+        public bool UsesUnityProjectOpener => HasUnityProjects && (ProjectOpener == null || ProjectOpener.IsUnity);
+        public Avalonia.Media.Imaging.Bitmap ProjectOpenerIcon => _projectOpenerIcon;
+        public bool HasProjectOpenerIcon => ProjectOpenerIcon != null;
+        public bool HasGenericProjectOpenerIcon => !HasProjectOpenerIcon;
+        public string ProjectOpenerTooltip => UsesUnityProjectOpener ? App.Text("Repository.OpenUnity") :
+            ProjectOpener is { IsUnity: false } opener ? App.Text("Repository.ProjectOpener.Open", opener.Name, opener.Target) :
+            App.Text("Repository.ProjectOpener.Select");
+
+        public void SetProjectOpener(Models.ProjectOpener opener)
+        {
+            _settings.ProjectOpener = opener;
+            _settings.Save();
+            NotifyProjectOpenerChanged();
+        }
+
+        private void NotifyProjectOpenerChanged()
+        {
+            var revision = ++_projectOpenerIconRevision;
+            var opener = ProjectOpener;
+            var unity = UsesUnityProjectOpener ? UnityProjects[0] : null;
+            _projectOpenerIcon = null;
+            OnPropertyChanged(nameof(ProjectOpener));
+            OnPropertyChanged(nameof(UsesUnityProjectOpener));
+            OnPropertyChanged(nameof(ProjectOpenerIcon));
+            OnPropertyChanged(nameof(HasProjectOpenerIcon));
+            OnPropertyChanged(nameof(HasGenericProjectOpenerIcon));
+            OnPropertyChanged(nameof(ProjectOpenerTooltip));
+            if (unity == null && opener is not { IsUnity: false })
+                return;
+            Task.Run(() =>
+            {
+                var executable = unity != null ? unity.FindEditor(Models.UnityProject.EditorRoots()) : opener.Executable;
+                var icon = Native.OS.GetProgramIcon(executable);
+                Dispatcher.UIThread.Post(() =>
+                {
+                    if (revision != _projectOpenerIconRevision)
+                        return;
+                    _projectOpenerIcon = icon;
+                    OnPropertyChanged(nameof(ProjectOpenerIcon));
+                    OnPropertyChanged(nameof(HasProjectOpenerIcon));
+                    OnPropertyChanged(nameof(HasGenericProjectOpenerIcon));
+                });
+            });
+        }
+
         private void RefreshUnityProjects()
         {
-            UnityProjects = IsBare ? [] : Models.UnityProject.Find(FullPath, Submodules.Select(s => s.Path));
+            UnityProjects = IsBare ? [] : Models.UnityProject.Find(FullPath);
+            NotifyProjectOpenerChanged();
         }
 
         public bool ShowSubmodulesAsTree
@@ -497,6 +544,8 @@ namespace SourceGit.ViewModels
 
         public void Close()
         {
+            _projectOpenerIconRevision++;
+            _histories?.EndCommitFilter();
             _autoFetchTimer?.Dispose();
             Preferences.Instance.PropertyChanged -= OnAutoFetchPreferenceChanged;
             var lifetime = _autoFetchLifetime;
@@ -2084,6 +2133,8 @@ namespace SourceGit.ViewModels
         private object _visibleTags = null;
         private List<Models.Submodule> _submodules = [];
         private List<Models.UnityProject> _unityProjects = [];
+        private Avalonia.Media.Imaging.Bitmap _projectOpenerIcon;
+        private int _projectOpenerIconRevision;
         private object _visibleSubmodules = null;
         private string _navigateToCommitDelayed = string.Empty;
 

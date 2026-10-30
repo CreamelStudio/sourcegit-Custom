@@ -40,6 +40,13 @@ namespace SourceGit.Views
                 TxtCopyright.Text = copyright.Copyright;
         }
 
+        private void OnVisitIconOwner(object sender, RoutedEventArgs e)
+        {
+            if (sender is Avalonia.Controls.Button { Tag: string url })
+                Native.OS.OpenBrowser(url);
+            e.Handled = true;
+        }
+
         private void OnVisitReleaseNotes(object _, RoutedEventArgs e)
         {
             var ver = TxtVersion.Text ?? string.Empty;

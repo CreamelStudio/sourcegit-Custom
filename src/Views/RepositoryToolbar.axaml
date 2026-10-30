@@ -10,13 +10,16 @@
              x:DataType="vm:Repository">
   <Grid ColumnDefinitions="*,Auto,0,*">
     <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="4,0,0,0">
-      <Button Classes="icon_button" Width="32" Click="OpenWithExternalTools" ToolTip.Tip="{DynamicResource Text.Repository.OpenWithExternalTools}">
-        <Path Width="14" Height="14" Data="{StaticResource Icons.OpenWith}"/>
+      <Button Classes="icon_button" Width="28" Click="OpenProject" IsEnabled="{Binding !IsBare}"
+              ToolTip.Tip="{Binding ProjectOpenerTooltip}" AutomationProperties.Name="{Binding ProjectOpenerTooltip}">
+        <Grid>
+          <Image Width="16" Height="16" Source="{Binding ProjectOpenerIcon}" IsVisible="{Binding HasProjectOpenerIcon}"/>
+          <Path Width="14" Height="14" Data="{StaticResource Icons.OpenWith}" IsVisible="{Binding HasGenericProjectOpenerIcon}"/>
+        </Grid>
       </Button>
-
-      <Button Classes="icon_button" Width="28" Click="OpenUnity" IsVisible="{Binding HasUnityProjects}"
-              ToolTip.Tip="{DynamicResource Text.Repository.OpenUnity}" AutomationProperties.Name="{DynamicResource Text.Repository.OpenUnity}">
-        <Path Width="14" Height="14" Data="{StaticResource Icons.Unity}"/>
+      <Button Classes="icon_button" Width="14" Click="SelectProjectOpener" IsEnabled="{Binding !IsBare}"
+              ToolTip.Tip="{DynamicResource Text.Repository.ProjectOpener.Select}" AutomationProperties.Name="{DynamicResource Text.Repository.ProjectOpener.Select}">
+        <Path Width="6" Height="6" Data="{StaticResource Icons.Down}"/>
       </Button>
 
       <Button Classes="icon_button" Width="32" Click="OpenGitLogs" ToolTip.Tip="{DynamicResource Text.Repository.ViewLogs}">
