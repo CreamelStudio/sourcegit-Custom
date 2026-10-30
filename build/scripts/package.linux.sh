@@ -38,6 +38,9 @@ fi
 rm -f SourceGit/*.dbg
 rm -f SourceGit/*.pdb
 
+# Native libraries may retain owner-only execute permissions from the build artifact.
+chmod -R a+rX SourceGit
+
 mkdir -p SourceGit.AppDir/opt
 mkdir -p SourceGit.AppDir/usr/share/metainfo
 mkdir -p SourceGit.AppDir/usr/share/applications
