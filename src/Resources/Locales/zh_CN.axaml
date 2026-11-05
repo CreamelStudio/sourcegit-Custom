@@ -414,6 +414,8 @@
   <x:String x:Key="Text.Discard.IncludeIgnored" xml:space="preserve">包括所有已忽略的文件</x:String>
   <x:String x:Key="Text.Discard.IncludeModified" xml:space="preserve">包括已修改或删除的文件</x:String>
   <x:String x:Key="Text.Discard.IncludeUntracked" xml:space="preserve">包括未跟踪的文件</x:String>
+  <x:String x:Key="Text.Discard.LockSubmodules" xml:space="preserve">锁定子模块丢弃操作</x:String>
+  <x:String x:Key="Text.Discard.LockSubmodules.Tip" xml:space="preserve">丢弃更改时保留子模块的工作文件和已检出的提交。</x:String>
   <x:String x:Key="Text.Discard.Total" xml:space="preserve">总计{0}项选中更改</x:String>
   <x:String x:Key="Text.Discard.Warning" xml:space="preserve">本操作不支持回退，请确认后继续！！！</x:String>
   <x:String x:Key="Text.EditBranchDescription" xml:space="preserve">编辑分支描述</x:String>

@@ -386,6 +386,8 @@
   <x:String x:Key="Text.Discard.IncludeIgnored" xml:space="preserve">כולל קבצים שב־ignore</x:String>
   <x:String x:Key="Text.Discard.IncludeModified" xml:space="preserve">כולל קבצים ששונו או נמחקו</x:String>
   <x:String x:Key="Text.Discard.IncludeUntracked" xml:space="preserve">כולל קבצים untracked</x:String>
+  <x:String x:Key="Text.Discard.LockSubmodules" xml:space="preserve">נעילת ביטול שינויים בתת־מודולים</x:String>
+  <x:String x:Key="Text.Discard.LockSubmodules.Tip" xml:space="preserve">שמירה על קובצי העבודה והקומיטים שנבחרו בתת־מודולים בעת ביטול שינויים.</x:String>
   <x:String x:Key="Text.Discard.Total" xml:space="preserve">{0} שינויים יושלכו</x:String>
   <x:String x:Key="Text.Discard.Warning" xml:space="preserve">לא ניתן לבטל פעולה זו!!!</x:String>
   <x:String x:Key="Text.EditBranchDescription" xml:space="preserve">ערוך תיאור ה־Branch</x:String>

@@ -50,5 +50,12 @@
                  IsChecked="False"
                  Click="OnRadioButtonClicked"
                  Tag="{Binding Source={x:Static m:DealWithLocalChanges.Discard}}"/>
+    <Border IsVisible="{Binding #ThisControl.RepositorySettings, Converter={x:Static ObjectConverters.IsNotNull}}">
+      <CheckBox Content="{DynamicResource Text.Discard.LockSubmodules}"
+                Margin="18,0,0,0"
+                IsVisible="{Binding #RadioDiscard.IsChecked}"
+                IsChecked="{Binding #ThisControl.RepositorySettings.LockSubmoduleDiscard, Mode=TwoWay}"
+                ToolTip.Tip="{DynamicResource Text.Discard.LockSubmodules.Tip}"/>
+    </Border>
   </StackPanel>
 </UserControl>

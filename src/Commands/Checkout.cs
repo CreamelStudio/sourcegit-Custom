@@ -6,18 +6,22 @@ namespace SourceGit.Commands
 {
     public class Checkout : Command
     {
-        public Checkout(string repo)
+        public Checkout(string repo, bool lockSubmoduleDiscard = true)
         {
             WorkingDirectory = repo;
             Context = repo;
+            _lockSubmoduleDiscard = lockSubmoduleDiscard;
         }
 
         public async Task<bool> BranchAsync(string branch, bool force)
         {
+            if (force && _lockSubmoduleDiscard && !await new CheckSubmoduleOverwrite(WorkingDirectory).IsSafeAsync(branch).ConfigureAwait(false))
+                return false;
+
             var builder = new StringBuilder();
             builder.Append("checkout --progress ");
             if (force)
-                builder.Append("--force ");
+                builder.Append(_lockSubmoduleDiscard ? "--force --no-recurse-submodules " : "--force --recurse-submodules ");
             builder.Append(branch);
 
             Args = builder.ToString();
@@ -26,10 +30,13 @@ namespace SourceGit.Commands
 
         public async Task<bool> BranchAsync(string branch, string basedOn, bool force, bool allowOverwrite)
         {
+            if (force && _lockSubmoduleDiscard && !await new CheckSubmoduleOverwrite(WorkingDirectory).IsSafeAsync(basedOn).ConfigureAwait(false))
+                return false;
+
             var builder = new StringBuilder();
             builder.Append("checkout --progress ");
             if (force)
-                builder.Append("--force ");
+                builder.Append(_lockSubmoduleDiscard ? "--force --no-recurse-submodules " : "--force --recurse-submodules ");
             builder.Append(allowOverwrite ? "-B " : "-b ");
             builder.Append(branch);
             builder.Append(" ");
@@ -41,7 +48,10 @@ namespace SourceGit.Commands
 
         public async Task<bool> CommitAsync(string commitId, bool force)
         {
-            var option = force ? "--force" : string.Empty;
+            if (force && _lockSubmoduleDiscard && !await new CheckSubmoduleOverwrite(WorkingDirectory).IsSafeAsync(commitId).ConfigureAwait(false))
+                return false;
+
+            var option = force ? (_lockSubmoduleDiscard ? "--force --no-recurse-submodules" : "--force --recurse-submodules") : string.Empty;
             Args = $"checkout {option} --detach --progress {commitId}";
             return await ExecAsync().ConfigureAwait(false);
         }
@@ -87,5 +97,7 @@ namespace SourceGit.Commands
             Args = builder.ToString();
             return await ExecAsync().ConfigureAwait(false);
         }
+
+        private readonly bool _lockSubmoduleDiscard;
     }
 }

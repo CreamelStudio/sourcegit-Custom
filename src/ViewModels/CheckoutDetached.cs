@@ -4,6 +4,8 @@ namespace SourceGit.ViewModels
 {
     public class CheckoutDetached : Popup
     {
+        public Models.RepositorySettings RepositorySettings => _repo.Settings;
+
         public object Target
         {
             get;
@@ -95,14 +97,14 @@ namespace SourceGit.ViewModels
             }
             else
             {
-                succ = await new Commands.Checkout(_repo.FullPath)
+                succ = await new Commands.Checkout(_repo.FullPath, _repo.Settings.LockSubmoduleDiscard)
                     .Use(log)
                     .CommitAsync(_revision, true);
             }
 
             if (succ)
             {
-                await _repo.AutoUpdateSubmodulesAsync(log);
+                await _repo.AutoUpdateSubmodulesAsync(log, DealWithLocalChanges == Models.DealWithLocalChanges.Discard);
 
                 if (needPop)
                     await new Commands.Stash(_repo.FullPath)

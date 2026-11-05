@@ -386,6 +386,8 @@
   <x:String x:Key="Text.Discard.IncludeIgnored" xml:space="preserve">Inclure les fichiers ignorés</x:String>
   <x:String x:Key="Text.Discard.IncludeModified" xml:space="preserve">Inclure les fichiers modifiés/supprimés</x:String>
   <x:String x:Key="Text.Discard.IncludeUntracked" xml:space="preserve">Inclure les fichiers non suivis</x:String>
+  <x:String x:Key="Text.Discard.LockSubmodules" xml:space="preserve">Verrouiller l’annulation dans les sous-modules</x:String>
+  <x:String x:Key="Text.Discard.LockSubmodules.Tip" xml:space="preserve">Conserver les fichiers de travail et les commits extraits des sous-modules lors de l’annulation des modifications.</x:String>
   <x:String x:Key="Text.Discard.Total" xml:space="preserve">{0} changements seront rejetés</x:String>
   <x:String x:Key="Text.Discard.Warning" xml:space="preserve">Vous ne pouvez pas annuler cette action !!!</x:String>
   <x:String x:Key="Text.EditBranchDescription" xml:space="preserve">Modifier la description de la branche</x:String>

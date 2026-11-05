@@ -400,6 +400,8 @@ $1, $2, … Werte der Eingabe-Steuerelemente</x:String>
   <x:String x:Key="Text.Discard.IncludeIgnored" xml:space="preserve">Ignorierte Dateien einbeziehen</x:String>
   <x:String x:Key="Text.Discard.IncludeModified" xml:space="preserve">Geänderte/gelöschte Dateien einbeziehen</x:String>
   <x:String x:Key="Text.Discard.IncludeUntracked" xml:space="preserve">Nicht-verfolgte Dateien einbeziehen</x:String>
+  <x:String x:Key="Text.Discard.LockSubmodules" xml:space="preserve">Verwerfen in Submodulen sperren</x:String>
+  <x:String x:Key="Text.Discard.LockSubmodules.Tip" xml:space="preserve">Arbeitsdateien und ausgecheckte Commits der Submodule beim Verwerfen von Änderungen beibehalten.</x:String>
   <x:String x:Key="Text.Discard.Total" xml:space="preserve">{0} Änderungen werden verworfen</x:String>
   <x:String x:Key="Text.Discard.Warning" xml:space="preserve">Du kannst das nicht rückgängig machen!!!</x:String>
   <x:String x:Key="Text.EditBranchDescription" xml:space="preserve">Beschreibung des Branches bearbeiten</x:String>

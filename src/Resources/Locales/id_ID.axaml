@@ -400,6 +400,8 @@
   <x:String x:Key="Text.Discard.IncludeIgnored" xml:space="preserve">Termasuk berkas yang diabaikan</x:String>
   <x:String x:Key="Text.Discard.IncludeModified" xml:space="preserve">Sertakan berkas yang diubah/dihapus</x:String>
   <x:String x:Key="Text.Discard.IncludeUntracked" xml:space="preserve">Termasuk berkas yang tidak dilacak</x:String>
+  <x:String x:Key="Text.Discard.LockSubmodules" xml:space="preserve">Kunci pembuangan perubahan submodul</x:String>
+  <x:String x:Key="Text.Discard.LockSubmodules.Tip" xml:space="preserve">Pertahankan berkas kerja dan commit yang di-checkout pada submodul saat membuang perubahan.</x:String>
   <x:String x:Key="Text.Discard.Total" xml:space="preserve">{0} perubahan akan dibuang</x:String>
   <x:String x:Key="Text.Discard.Warning" xml:space="preserve">Anda tidak dapat membatalkan aksi ini!!!</x:String>
   <x:String x:Key="Text.EditBranchDescription" xml:space="preserve">Sunting Deskripsi Branch</x:String>

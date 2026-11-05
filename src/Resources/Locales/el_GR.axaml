@@ -400,6 +400,8 @@
   <x:String x:Key="Text.Discard.IncludeIgnored" xml:space="preserve">Συμπερίληψη αγνοούμενων αρχείων</x:String>
   <x:String x:Key="Text.Discard.IncludeModified" xml:space="preserve">Συμπερίληψη τροποποιημένων/διαγραμμένων αρχείων</x:String>
   <x:String x:Key="Text.Discard.IncludeUntracked" xml:space="preserve">Συμπερίληψη μη παρακολουθούμενων αρχείων</x:String>
+  <x:String x:Key="Text.Discard.LockSubmodules" xml:space="preserve">Κλείδωμα απόρριψης υπομονάδων</x:String>
+  <x:String x:Key="Text.Discard.LockSubmodules.Tip" xml:space="preserve">Διατήρηση των αρχείων εργασίας και των επιλεγμένων commits των υπομονάδων κατά την απόρριψη αλλαγών.</x:String>
   <x:String x:Key="Text.Discard.Total" xml:space="preserve">{0} αλλαγές θα απορριφθούν</x:String>
   <x:String x:Key="Text.Discard.Warning" xml:space="preserve">Δεν μπορείτε να αναιρέσετε αυτή την ενέργεια!!!</x:String>
   <x:String x:Key="Text.EditBranchDescription" xml:space="preserve">Επεξεργασία περιγραφής κλάδου</x:String>

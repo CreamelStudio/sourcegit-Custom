@@ -245,6 +245,8 @@
   <x:String x:Key="Text.Discard.All" xml:space="preserve">Todas as alterações locais na cópia de trabalho.</x:String>
   <x:String x:Key="Text.Discard.Changes" xml:space="preserve">Alterações:</x:String>
   <x:String x:Key="Text.Discard.IncludeIgnored" xml:space="preserve">Incluir arquivos ignorados</x:String>
+  <x:String x:Key="Text.Discard.LockSubmodules" xml:space="preserve">Bloquear descarte em submódulos</x:String>
+  <x:String x:Key="Text.Discard.LockSubmodules.Tip" xml:space="preserve">Preservar arquivos de trabalho e commits em checkout dos submódulos ao descartar alterações.</x:String>
   <x:String x:Key="Text.Discard.Total" xml:space="preserve">Um total de {0} alterações será descartado</x:String>
   <x:String x:Key="Text.Discard.Warning" xml:space="preserve">Você não pode desfazer esta ação!!!</x:String>
   <x:String x:Key="Text.EditRepositoryNode.Bookmark" xml:space="preserve">Favorito:</x:String>

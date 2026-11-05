@@ -7,6 +7,15 @@ namespace SourceGit.Views
 {
     public partial class DealWithLocalChangesMethod : UserControl
     {
+        public static readonly StyledProperty<Models.RepositorySettings> RepositorySettingsProperty =
+            AvaloniaProperty.Register<DealWithLocalChangesMethod, Models.RepositorySettings>(nameof(RepositorySettings));
+
+        public Models.RepositorySettings RepositorySettings
+        {
+            get => GetValue(RepositorySettingsProperty);
+            set => SetValue(RepositorySettingsProperty, value);
+        }
+
         public static readonly DirectProperty<DealWithLocalChangesMethod, Models.DealWithLocalChanges> MethodProperty =
             AvaloniaProperty.RegisterDirect<DealWithLocalChangesMethod, Models.DealWithLocalChanges>(
                 nameof(Method),

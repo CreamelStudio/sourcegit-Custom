@@ -43,6 +43,17 @@ namespace SourceGit.Models
             set;
         } = false;
 
+        public bool LockSubmoduleDiscard
+        {
+            get => _lockSubmoduleDiscard;
+            set
+            {
+                _lockSubmoduleDiscard = value;
+                if (!string.IsNullOrEmpty(_file))
+                    Save();
+            }
+        }
+
         public string PreferredOpenAIService
         {
             get;
@@ -150,5 +161,6 @@ namespace SourceGit.Models
         private static Dictionary<string, RepositorySettings> _cache = new();
         private string _file = string.Empty;
         private string _orgHash = string.Empty;
+        private bool _lockSubmoduleDiscard = true;
     }
 }

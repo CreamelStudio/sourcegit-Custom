@@ -360,6 +360,8 @@ ${pure_files:N} Come ${files:N}, ma senza cartelle</x:String>
   <x:String x:Key="Text.Discard.Changes" xml:space="preserve">Modifiche:</x:String>
   <x:String x:Key="Text.Discard.IncludeIgnored" xml:space="preserve">Includi file ignorati</x:String>
   <x:String x:Key="Text.Discard.IncludeUntracked" xml:space="preserve">Includi file non tracciati</x:String>
+  <x:String x:Key="Text.Discard.LockSubmodules" xml:space="preserve">Blocca lo scarto nei sottomoduli</x:String>
+  <x:String x:Key="Text.Discard.LockSubmodules.Tip" xml:space="preserve">Conserva i file di lavoro e i commit estratti dei sottomoduli quando scarti le modifiche.</x:String>
   <x:String x:Key="Text.Discard.Total" xml:space="preserve">Un totale di {0} modifiche saranno scartate</x:String>
   <x:String x:Key="Text.Discard.Warning" xml:space="preserve">Questa azione non può essere annullata!!!</x:String>
   <x:String x:Key="Text.EditBranchDescription" xml:space="preserve">Modifica Descrizione del Branch</x:String>

@@ -105,5 +105,9 @@
         </DataTemplate>
       </ContentControl.DataTemplates>
     </ContentControl>
+    <CheckBox Margin="120,0,0,8"
+              Content="{DynamicResource Text.Discard.LockSubmodules}"
+              IsChecked="{Binding RepositorySettings.LockSubmoduleDiscard, Mode=TwoWay}"
+              ToolTip.Tip="{DynamicResource Text.Discard.LockSubmodules.Tip}"/>
   </StackPanel>
 </UserControl>

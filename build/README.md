@@ -43,6 +43,10 @@ dotnet run --project tests/UpdateChecks -c Release -p:DisableAOT=true
 powershell -NoProfile -File tests/UpdateChecks/windows.ps1
 ```
 
+## Submodule discard lock
+
+Submodule discard is locked by default for each repository. The checkbox in checkout/discard dialogs and repository Git settings saves immediately and is shared by linked worktrees. Discard during branch checkout, branch creation and detached checkout preserves submodule working files, their index and checked-out commits, and skips the subsequent automatic submodule update. Selected/all Discard also preserves initialized submodule working copies and detached repositories. A checkout or reset that would replace a protected submodule folder with a regular file is rejected before changing files. Unlocking explicitly allows recursive submodule discard; it does not remove untracked files inside initialized submodules.
+
 ## Missing worktrees
 
 Branch/worktree refresh and checkout, branch and worktree-add operations clean stale worktree registrations using Git's metadata-only prune. The batch is eligible only when every unlocked prunable entry is a missing folder on a ready fixed local drive with an attached branch. Existing folders, detached HEADs, inaccessible paths and removable/network drives defer automatic pruning; locked entries remain protected by Git. Branches and working files are never deleted by this cleanup. Parent and submodule repositories have separate registrations and are checked independently when opened. A manually moved worktree should be reconnected with `git worktree repair` before refreshing its original repository.

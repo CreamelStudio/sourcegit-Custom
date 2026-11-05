@@ -404,6 +404,8 @@
   <x:String x:Key="Text.Discard.IncludeIgnored" xml:space="preserve">無視されたファイルを含める</x:String>
   <x:String x:Key="Text.Discard.IncludeModified" xml:space="preserve">変更/削除されたファイルを含める</x:String>
   <x:String x:Key="Text.Discard.IncludeUntracked" xml:space="preserve">未追跡のファイルを含める</x:String>
+  <x:String x:Key="Text.Discard.LockSubmodules" xml:space="preserve">サブモジュールの破棄をロック</x:String>
+  <x:String x:Key="Text.Discard.LockSubmodules.Tip" xml:space="preserve">変更を破棄する際、サブモジュールの作業ファイルとチェックアウト済みコミットを保護します。</x:String>
   <x:String x:Key="Text.Discard.Total" xml:space="preserve">{0} 件の変更が破棄されます</x:String>
   <x:String x:Key="Text.Discard.Warning" xml:space="preserve">この操作は元に戻せません！！！</x:String>
   <x:String x:Key="Text.EditBranchDescription" xml:space="preserve">ブランチの説明を編集</x:String>

@@ -144,6 +144,7 @@ try
 {
     await FetchChecks.RunAsync();
     await WorktreeChecks.RunAsync();
+    await SubmoduleDiscardChecks.RunAsync();
     await CommitFilterChecks.RunAsync();
     await WorkspaceChecks.RunAsync();
 PresetChecks.CheckLauncher();

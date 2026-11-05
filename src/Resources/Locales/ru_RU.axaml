@@ -414,6 +414,8 @@
   <x:String x:Key="Text.Discard.IncludeIgnored" xml:space="preserve">Включить игнорируемые файлы</x:String>
   <x:String x:Key="Text.Discard.IncludeModified" xml:space="preserve">Включить изменённые/удалённые файлы</x:String>
   <x:String x:Key="Text.Discard.IncludeUntracked" xml:space="preserve">Включить неотслеживаемые файлы</x:String>
+  <x:String x:Key="Text.Discard.LockSubmodules" xml:space="preserve">Заблокировать сброс изменений подмодулей</x:String>
+  <x:String x:Key="Text.Discard.LockSubmodules.Tip" xml:space="preserve">Сохранять рабочие файлы и выбранные коммиты подмодулей при сбросе изменений.</x:String>
   <x:String x:Key="Text.Discard.Total" xml:space="preserve">{0} изменений будут отменены</x:String>
   <x:String x:Key="Text.Discard.Warning" xml:space="preserve">Вы не можете отменить это действие!!!</x:String>
   <x:String x:Key="Text.EditBranchDescription" xml:space="preserve">Править описание ветки</x:String>

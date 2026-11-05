@@ -232,6 +232,8 @@
   <x:String x:Key="Text.Discard.All" xml:space="preserve">Усі локальні зміни в робочій копії.</x:String>
   <x:String x:Key="Text.Discard.Changes" xml:space="preserve">Зміни:</x:String>
   <x:String x:Key="Text.Discard.IncludeIgnored" xml:space="preserve">Включити файли, які ігноруються</x:String>
+  <x:String x:Key="Text.Discard.LockSubmodules" xml:space="preserve">Заблокувати скидання змін підмодулів</x:String>
+  <x:String x:Key="Text.Discard.LockSubmodules.Tip" xml:space="preserve">Зберігати робочі файли й вибрані коміти підмодулів під час скидання змін.</x:String>
   <x:String x:Key="Text.Discard.Total" xml:space="preserve">{0} змін будуть відхилені</x:String>
   <x:String x:Key="Text.Discard.Warning" xml:space="preserve">Ви не можете скасувати цю дію!!!</x:String>
   <x:String x:Key="Text.EditRepositoryNode.Bookmark" xml:space="preserve">Закладка:</x:String>

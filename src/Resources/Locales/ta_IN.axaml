@@ -228,6 +228,8 @@
   <x:String x:Key="Text.Discard.All" xml:space="preserve">செயல்படும் நகலில் உள்ள அனைத்து உள்ளக மாற்றங்கள்.</x:String>
   <x:String x:Key="Text.Discard.Changes" xml:space="preserve">மாற்றங்கள்:</x:String>
   <x:String x:Key="Text.Discard.IncludeIgnored" xml:space="preserve">புறக்கணிக்கப்பட்ட கோப்புகளைச் சேர்</x:String>
+  <x:String x:Key="Text.Discard.LockSubmodules" xml:space="preserve">துணைத்தொகுதி மாற்றங்களை நிராகரிப்பதைப் பூட்டு</x:String>
+  <x:String x:Key="Text.Discard.LockSubmodules.Tip" xml:space="preserve">மாற்றங்களை நிராகரிக்கும்போது துணைத்தொகுதிகளின் வேலைக் கோப்புகளையும் தேர்ந்தெடுத்த கமிட்களையும் பாதுகாக்கவும்.</x:String>
   <x:String x:Key="Text.Discard.Total" xml:space="preserve">{0} மாற்றங்கள் நிராகரிக்கப்படும்</x:String>
   <x:String x:Key="Text.Discard.Warning" xml:space="preserve">இந்தச் செயலை நீங்கள் செயல்தவிர்க்க முடியாது!!!</x:String>
   <x:String x:Key="Text.EditRepositoryNode.Bookmark" xml:space="preserve">புத்தகக்குறி:</x:String>

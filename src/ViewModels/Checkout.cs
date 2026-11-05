@@ -4,6 +4,8 @@ namespace SourceGit.ViewModels
 {
     public class Checkout : Popup
     {
+        public Models.RepositorySettings RepositorySettings => _repo.Settings;
+
         public string BranchName
         {
             get => _branch.Name;
@@ -84,14 +86,14 @@ namespace SourceGit.ViewModels
             }
             else
             {
-                succ = await new Commands.Checkout(_repo.FullPath)
+                succ = await new Commands.Checkout(_repo.FullPath, _repo.Settings.LockSubmoduleDiscard)
                     .Use(log)
                     .BranchAsync(branchName, true);
             }
 
             if (succ)
             {
-                await _repo.AutoUpdateSubmodulesAsync(log);
+                await _repo.AutoUpdateSubmodulesAsync(log, DealWithLocalChanges == Models.DealWithLocalChanges.Discard);
 
                 if (needPopStash)
                     await new Commands.Stash(_repo.FullPath)

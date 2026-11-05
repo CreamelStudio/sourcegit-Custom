@@ -90,7 +90,8 @@
                    Text="{DynamicResource Text.CreateBranch.LocalChanges}"/>
       </Border>
       <v:DealWithLocalChangesMethod Grid.Row="2" Grid.Column="1"
-                                    Method="{Binding DealWithLocalChanges, Mode=TwoWay}">
+                                    Method="{Binding DealWithLocalChanges, Mode=TwoWay}"
+                                    RepositorySettings="{Binding RepositorySettings}">
         <v:DealWithLocalChangesMethod.IsVisible>
           <MultiBinding Converter="{x:Static BoolConverters.And}">
             <Binding Path="HasLocalChanges" Mode="OneWay"/>

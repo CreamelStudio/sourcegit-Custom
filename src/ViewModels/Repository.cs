@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -1605,8 +1604,11 @@ namespace SourceGit.ViewModels
                 ShowPopup(new UpdateSubmodules(this, null));
         }
 
-        public async Task AutoUpdateSubmodulesAsync(Models.ICommandLog log)
+        public async Task AutoUpdateSubmodulesAsync(Models.ICommandLog log, bool isDiscard = false)
         {
+            if (isDiscard && _settings.LockSubmoduleDiscard)
+                return;
+
             var submodules = await new Commands.QueryUpdatableSubmodules(FullPath, false).GetResultAsync();
             if (submodules.Count == 0)
                 return;
@@ -1997,8 +1999,10 @@ namespace SourceGit.ViewModels
                 if (state != null)
                 {
                     IsAutoFetching = state.Status == Models.BackgroundTaskStatus.Running;
-                    if (state.Status == Models.BackgroundTaskStatus.Succeeded) _fetchScheduler.MarkFetched(state.UpdatedAt);
-                    else if (state.Status == Models.BackgroundTaskStatus.Failed) _fetchScheduler.MarkFailed(state.UpdatedAt);
+                    if (state.Status == Models.BackgroundTaskStatus.Succeeded)
+                        _fetchScheduler.MarkFetched(state.UpdatedAt);
+                    else if (state.Status == Models.BackgroundTaskStatus.Failed)
+                        _fetchScheduler.MarkFailed(state.UpdatedAt);
                 }
                 return;
             }

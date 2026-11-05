@@ -10,8 +10,11 @@ namespace SourceGit.Commands
         /// <summary>
         ///     Discard all local changes (unstaged & staged)
         /// </summary>
-        public static async Task AllAsync(string repo, bool includeModified, bool includeUntracked, bool includeIgnored, Models.ICommandLog log)
+        public static async Task<bool> AllAsync(string repo, bool includeModified, bool includeUntracked, bool includeIgnored, Models.ICommandLog log, bool lockSubmoduleDiscard = true)
         {
+            if (includeModified && lockSubmoduleDiscard && !await new CheckSubmoduleOverwrite(repo).IsSafeAsync("HEAD").ConfigureAwait(false))
+                return false;
+
             if (includeUntracked)
             {
                 // Untracked paths that contains `.git` file (detached submodule) must be removed manually.
@@ -26,7 +29,7 @@ namespace SourceGit.Commands
                             c.Index == Models.ChangeState.Renamed)
                         {
                             var fullPath = Path.Combine(repo, c.Path);
-                            if (Directory.Exists(fullPath))
+                            if (Directory.Exists(fullPath) && (!lockSubmoduleDiscard || !IsNestedRepository(fullPath)))
                                 Directory.Delete(fullPath, true);
                         }
                     }
@@ -47,7 +50,12 @@ namespace SourceGit.Commands
             }
 
             if (includeModified)
-                await new Reset(repo, "", "--hard").Use(log).ExecAsync().ConfigureAwait(false);
+            {
+                var recurse = lockSubmoduleDiscard ? "--no-recurse-submodules" : "--recurse-submodules";
+                return await new Reset(repo, "", $"--hard {recurse}").Use(log).ExecAsync().ConfigureAwait(false);
+            }
+
+            return true;
         }
 
         /// <summary>
@@ -56,7 +64,7 @@ namespace SourceGit.Commands
         /// <param name="repo"></param>
         /// <param name="changes"></param>
         /// <param name="log"></param>
-        public static async Task ChangesAsync(string repo, List<Models.Change> changes, Models.ICommandLog log)
+        public static async Task ChangesAsync(string repo, List<Models.Change> changes, Models.ICommandLog log, bool lockSubmoduleDiscard = true)
         {
             var restores = new List<string>();
 
@@ -64,9 +72,12 @@ namespace SourceGit.Commands
             {
                 foreach (var c in changes)
                 {
+                    var fullPath = Path.Combine(repo, c.Path);
+                    if (lockSubmoduleDiscard && IsNestedRepository(fullPath))
+                        continue;
+
                     if (c.WorkTree == Models.ChangeState.Untracked || c.WorkTree == Models.ChangeState.Added)
                     {
-                        var fullPath = Path.Combine(repo, c.Path);
                         if (Directory.Exists(fullPath))
                             Directory.Delete(fullPath, true);
                         else
@@ -87,9 +98,12 @@ namespace SourceGit.Commands
             {
                 var pathSpecFile = Path.GetTempFileName();
                 await File.WriteAllLinesAsync(pathSpecFile, restores).ConfigureAwait(false);
-                await new Restore(repo, pathSpecFile).Use(log).ExecAsync().ConfigureAwait(false);
+                await new Restore(repo, pathSpecFile, lockSubmoduleDiscard).Use(log).ExecAsync().ConfigureAwait(false);
                 File.Delete(pathSpecFile);
             }
         }
+
+        internal static bool IsNestedRepository(string path) =>
+            File.Exists(Path.Combine(path, ".git")) || Directory.Exists(Path.Combine(path, ".git"));
     }
 }

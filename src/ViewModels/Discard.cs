@@ -44,6 +44,8 @@ namespace SourceGit.ViewModels
 
     public class Discard : Popup
     {
+        public Models.RepositorySettings RepositorySettings => _repo.Settings;
+
         public object Mode
         {
             get;
@@ -79,12 +81,18 @@ namespace SourceGit.ViewModels
 
             if (Mode is DiscardAllMode all)
             {
-                await Commands.Discard.AllAsync(_repo.FullPath, all.IncludeModified, all.IncludeUntracked, all.IncludeIgnored, log);
+                var succ = await Commands.Discard.AllAsync(_repo.FullPath, all.IncludeModified, all.IncludeUntracked, all.IncludeIgnored, log, _repo.Settings.LockSubmoduleDiscard);
+                if (!succ)
+                {
+                    log.Complete();
+                    _repo.MarkWorkingCopyDirtyManually();
+                    return false;
+                }
                 _repo.ClearCommitMessage();
             }
             else
             {
-                await Commands.Discard.ChangesAsync(_repo.FullPath, _changes, log);
+                await Commands.Discard.ChangesAsync(_repo.FullPath, _changes, log, _repo.Settings.LockSubmoduleDiscard);
             }
 
             log.Complete();

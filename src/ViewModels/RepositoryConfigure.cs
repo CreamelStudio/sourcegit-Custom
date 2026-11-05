@@ -101,6 +101,12 @@ namespace SourceGit.ViewModels
             set => _repo.Settings.AskBeforeAutoUpdatingSubmodules = value;
         }
 
+        public bool LockSubmoduleDiscard
+        {
+            get => _repo.Settings.LockSubmoduleDiscard;
+            set => _repo.Settings.LockSubmoduleDiscard = value;
+        }
+
         public bool EnableRecursiveWhenAutoUpdatingSubmodules
         {
             get => _repo.Settings.EnableRecursiveWhenAutoUpdatingSubmodules;

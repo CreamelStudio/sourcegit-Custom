@@ -414,6 +414,8 @@
   <x:String x:Key="Text.Discard.IncludeIgnored" xml:space="preserve">Incluir archivos ignorados</x:String>
   <x:String x:Key="Text.Discard.IncludeModified" xml:space="preserve">Incluir archivos modificados/eliminados</x:String>
   <x:String x:Key="Text.Discard.IncludeUntracked" xml:space="preserve">Incluir archivos sin rastrear</x:String>
+  <x:String x:Key="Text.Discard.LockSubmodules" xml:space="preserve">Bloquear el descarte en submódulos</x:String>
+  <x:String x:Key="Text.Discard.LockSubmodules.Tip" xml:space="preserve">Conservar los archivos de trabajo y los commits extraídos de los submódulos al descartar cambios.</x:String>
   <x:String x:Key="Text.Discard.Total" xml:space="preserve">Total {0} cambios serán descartados</x:String>
   <x:String x:Key="Text.Discard.Warning" xml:space="preserve">¡No puedes deshacer esta acción!</x:String>
   <x:String x:Key="Text.EditBranchDescription" xml:space="preserve">Editar la descripción de la rama</x:String>

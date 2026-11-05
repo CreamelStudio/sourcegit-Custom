@@ -60,6 +60,7 @@
       </Border>
       <v:DealWithLocalChangesMethod Grid.Row="2" Grid.Column="1"
                                     Method="{Binding DealWithLocalChanges, Mode=TwoWay}"
+                                    RepositorySettings="{Binding RepositorySettings}"
                                     IsVisible="{Binding HasLocalChanges, Mode=OneWay}"/>
     </Grid>
   </StackPanel>

@@ -6,6 +6,8 @@ namespace SourceGit.ViewModels
 {
     public class CreateBranch : Popup
     {
+        public Models.RepositorySettings RepositorySettings => _repo.Settings;
+
         [Required(ErrorMessage = "Branch name is required!")]
         [CustomValidation(typeof(CreateBranch), nameof(ValidateBranchName))]
         public string Name
@@ -197,14 +199,14 @@ namespace SourceGit.ViewModels
                 }
                 else
                 {
-                    succ = await new Commands.Checkout(_repo.FullPath)
+                    succ = await new Commands.Checkout(_repo.FullPath, _repo.Settings.LockSubmoduleDiscard)
                         .Use(log)
                         .BranchAsync(_name, _baseOnRevision, true, _allowOverwrite);
                 }
 
                 if (succ)
                 {
-                    await _repo.AutoUpdateSubmodulesAsync(log);
+                    await _repo.AutoUpdateSubmodulesAsync(log, DealWithLocalChanges == Models.DealWithLocalChanges.Discard);
 
                     if (needPopStash)
                         await new Commands.Stash(_repo.FullPath)
