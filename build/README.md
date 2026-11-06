@@ -24,7 +24,7 @@ The Release workflow requires the tag version to match `VERSION`. Packages are u
 
 ## In-app updates
 
-Versions use `MAJOR.MINOR.PATCH`: bug fixes increment PATCH (`1.0.1`), features increment MINOR and reset PATCH (`1.1.0`), and major changes or redesigns increment MAJOR and reset the rest (`2.0.0`). The first release under this scheme is **Release v1.0.0**.
+Versions use `MAJOR.MINOR.PATCH`. Releases increment PATCH by `0.0.1` (for example, `1.3.0` → `1.3.1`) unless a different version is explicitly requested. The first release under this scheme is **Release v1.0.0**.
 
 The custom app checks `CreamelStudio/sourcegit-Custom` releases at startup and every hour when startup update checks are enabled. It uses the public GitHub API without a user token. It selects the highest stable `vMAJOR.MINOR.PATCH` from the 100 most recent releases and excludes drafts, prereleases and the legacy 2026 version scheme.
 
@@ -63,6 +63,8 @@ dotnet publish -c Release -r $RUNTIME_IDENTIFIER -o $DESTINATION_FOLDER src/Sour
 > Please replace the `$RUNTIME_IDENTIFIER` with one of `win-x64`,`win-arm64`,`linux-x64`,`linux-arm64`,`osx-x64`,`osx-arm64`, and replace the `$DESTINATION_FOLDER` with the real path that will store the output executable files.
 
 ## Project opener and compact commit filter
+
+On Windows, programs opened with the project button receive a `[branch]` prefix in their native window title while the repository is open in SourceGit. It follows branch changes and application title updates and restores the application's title when the repository closes. Unity also reconnects to an already-running editor through its local instance file. Other programs that reuse a running process require the full target path in the window title for reliable identification; custom-drawn headers may not display the native title. No Unity project files, extra dependencies or build/release steps are added. Other operating systems retain the normal launcher.
 
 The small project button opens the current Unity project with its exact installed editor version, or the program chosen for that repository. Its adjacent arrow selects a discovered IDE, a solution/workspace, or another executable, and can change the target folder/file. Targets stay inside the repository and are stored relatively, so linked worktrees open their own project. Missing programs/targets return to selection. Unity projects nested under `Client` or submodules do not turn a server repository's button into Unity. On Windows the button and menu read the selected executable's icon without launching it; cached icons load off the UI thread. The launcher uses no bundled product logos; the button falls back to a generic symbol when extraction is unavailable, including on other operating systems. Shared images still used by the existing merge-tool selector are preserved. Explorer, terminal and one-time IDE options remain under Other open options.
 

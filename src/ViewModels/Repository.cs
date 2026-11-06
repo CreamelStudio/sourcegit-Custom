@@ -250,6 +250,24 @@ namespace SourceGit.ViewModels
             NotifyProjectOpenerChanged();
         }
 
+        public void OpenProject(Models.ProjectOpener opener)
+        {
+            var start = opener.CreateStartInfo(FullPath);
+            if (OperatingSystem.IsWindows())
+            {
+                for (var i = _projectWindowTitles.Count - 1; i >= 0; i--)
+                {
+                    if (_projectWindowTitles[i] is Native.WindowsProjectWindowTitle monitor && monitor.IsDisposed)
+                        _projectWindowTitles.RemoveAt(i);
+                }
+                _projectWindowTitles.Add(new Native.WindowsProjectWindowTitle(start, () => CurrentBranch?.Name, opener.IsUnity));
+            }
+            else
+            {
+                using var process = System.Diagnostics.Process.Start(start);
+            }
+        }
+
         private void NotifyProjectOpenerChanged()
         {
             var revision = ++_projectOpenerIconRevision;
@@ -544,6 +562,9 @@ namespace SourceGit.ViewModels
         public void Close()
         {
             _projectOpenerIconRevision++;
+            foreach (var title in _projectWindowTitles)
+                title.Dispose();
+            _projectWindowTitles.Clear();
             _histories?.EndCommitFilter();
             _autoFetchTimer?.Dispose();
             Preferences.Instance.PropertyChanged -= OnAutoFetchPreferenceChanged;
@@ -2139,6 +2160,7 @@ namespace SourceGit.ViewModels
         private List<Models.UnityProject> _unityProjects = [];
         private Avalonia.Media.Imaging.Bitmap _projectOpenerIcon;
         private int _projectOpenerIconRevision;
+        private readonly List<IDisposable> _projectWindowTitles = [];
         private object _visibleSubmodules = null;
         private string _navigateToCommitDelayed = string.Empty;
 

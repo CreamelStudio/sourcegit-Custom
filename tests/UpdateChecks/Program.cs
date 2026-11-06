@@ -8,6 +8,21 @@ using SourceGit;
 using SourceGit.Models;
 using ReleaseVersion = SourceGit.Models.Version;
 
+if (args.Length == 2 && args[0] == "--title-test-no-window")
+    return;
+
+if (args.Length == 2 && args[0] == "--title-test-window" && OperatingSystem.IsWindows())
+{
+    WindowTitleChecks.RunWindow(args[1]);
+    return;
+}
+
+if (args.Length == 1 && args[0] == "--window-title-checks")
+{
+    await WindowTitleChecks.RunAsync();
+    return;
+}
+
 if (args.Length == 5 && args[0] == "--background-submit")
 {
     await WorkspaceChecks.SubmitAsync(args[1], args[2], args[3], args[4]);
@@ -25,6 +40,7 @@ PresetChecks.Run();
 UnityChecks.Run();
 ProjectOpenerChecks.Run();
 ProgramIconChecks.Run();
+await WindowTitleChecks.RunAsync();
 Check(ReleaseVersion.IsNewer("v2026.22.1", current), "A patch release must be detected.");
 Check(ReleaseVersion.IsNewer("v1.0.0", current), "The new version scheme must supersede the old date-based versions.");
 var v1 = new System.Version(1, 0, 0, 0);

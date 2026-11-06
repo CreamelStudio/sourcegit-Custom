@@ -37,7 +37,7 @@ namespace SourceGit.Views
 
             try
             {
-                using var process = Process.Start(opener.CreateStartInfo(repo.FullPath));
+                repo.OpenProject(opener);
             }
             catch (Exception ex)
             {
@@ -117,7 +117,8 @@ namespace SourceGit.Views
                 {
                     var files = await TopLevel.GetTopLevel(this)!.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
                     {
-                        Title = App.Text("Repository.ProjectOpener.ChooseProgram"), AllowMultiple = false,
+                        Title = App.Text("Repository.ProjectOpener.ChooseProgram"),
+                        AllowMultiple = false,
                         FileTypeFilter = [new FilePickerFileType("Program") { Patterns = OperatingSystem.IsWindows() ? ["*.exe"] : ["*"] }],
                     });
                     if (files.Count == 1)
@@ -157,7 +158,8 @@ namespace SourceGit.Views
 
         private static void SaveProjectOpener(ViewModels.Repository repo, Models.ExternalTool tool, string target)
         {
-            try { repo.SetProjectOpener(Models.ProjectOpener.FromTool(repo.FullPath, tool, target)); }
+            try
+            { repo.SetProjectOpener(Models.ProjectOpener.FromTool(repo.FullPath, tool, target)); }
             catch (Exception ex) { repo.SendNotification(App.Text("Repository.ProjectOpener.Failed", ex.Message), true); }
         }
 
