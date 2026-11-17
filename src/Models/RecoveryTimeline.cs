@@ -21,13 +21,16 @@ namespace SourceGit.Models
     {
         public static async Task CaptureAsync(string repository, string operation)
         {
+            var name = $"refs/sourcegit/recovery/{DateTimeOffset.UtcNow:yyyyMMddTHHmmssfffZ}-{Guid.NewGuid():N}/{operation}";
+            var saved = await GitQuery.ReadAsync(repository, ["update-ref", name, "HEAD"]).ConfigureAwait(false);
+            if (saved.ExitCode == 0)
+                return;
+
+            // Only an unborn HEAD may skip recovery; ref-write failures must still stop the operation.
             var head = await GitQuery.ReadAsync(repository, ["rev-parse", "--verify", "HEAD"]).ConfigureAwait(false);
             if (head.ExitCode != 0)
-                return; // An unborn branch has no commit to preserve.
-            var name = $"refs/sourcegit/recovery/{DateTimeOffset.UtcNow:yyyyMMddTHHmmssfffZ}-{Guid.NewGuid():N}/{operation}";
-            var saved = await GitQuery.ReadAsync(repository, ["update-ref", name, head.Output.Trim()]).ConfigureAwait(false);
-            if (saved.ExitCode != 0)
-                throw new InvalidOperationException(saved.Error);
+                return;
+            throw new InvalidOperationException(saved.Error);
         }
 
         public static async Task<List<RecoveryPoint>> ReadAsync(string repository, CancellationToken token)

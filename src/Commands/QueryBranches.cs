@@ -20,6 +20,7 @@ namespace SourceGit.Commands
 
         public async Task<List<Models.Branch>> GetResultAsync()
         {
+            CancellationToken.ThrowIfCancellationRequested();
             await new Worktree(WorkingDirectory) { CancellationToken = CancellationToken }.ReadAllAsync().ConfigureAwait(false);
             var branches = new List<Models.Branch>();
             var rs = await ReadToEndAsync().ConfigureAwait(false);
@@ -40,6 +41,7 @@ namespace SourceGit.Commands
                 }
             }
 
+            var tracking = new List<(Models.Branch Local, Models.Branch Remote)>();
             foreach (var b in branches)
             {
                 if (b.IsLocal && !string.IsNullOrEmpty(b.Upstream))
@@ -49,7 +51,7 @@ namespace SourceGit.Commands
                         b.IsUpstreamGone = false;
 
                         if (mismatched.Contains(b.FullName))
-                            await new QueryTrackStatus(WorkingDirectory).GetResultAsync(b, upstream).ConfigureAwait(false);
+                            tracking.Add((b, upstream));
                     }
                     else
                     {
@@ -57,6 +59,10 @@ namespace SourceGit.Commands
                     }
                 }
             }
+
+            await Parallel.ForEachAsync(tracking, new ParallelOptions { MaxDegreeOfParallelism = 4, CancellationToken = CancellationToken },
+                async (pair, token) => await new QueryTrackStatus(WorkingDirectory) { CancellationToken = token }
+                    .GetResultAsync(pair.Local, pair.Remote).ConfigureAwait(false)).ConfigureAwait(false);
 
             return branches;
         }

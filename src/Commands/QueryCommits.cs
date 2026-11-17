@@ -109,6 +109,7 @@ namespace SourceGit.Commands
                 if (_markMerged && !findHead && commits.Count > 0)
                 {
                     var set = await new QueryCurrentBranchCommitHashes(WorkingDirectory, commits[^1].CommitterTime)
+                        .WithCancellation(CancellationToken)
                         .GetResultAsync()
                         .ConfigureAwait(false);
 

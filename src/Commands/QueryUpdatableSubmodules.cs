@@ -14,7 +14,8 @@ namespace SourceGit.Commands
         {
             WorkingDirectory = repo;
             Context = repo;
-            Args = "submodule status";
+            // Avoid Git for Windows' shell startup while keeping the same submodule status checks.
+            Args = OperatingSystem.IsWindows() ? "submodule--helper status" : "submodule status";
 
             _includeUninited = includeUninited;
         }
@@ -23,6 +24,11 @@ namespace SourceGit.Commands
         {
             var submodules = new List<string>();
             var rs = await ReadToEndAsync().ConfigureAwait(false);
+            if (!rs.IsSuccess && OperatingSystem.IsWindows())
+            {
+                Args = "submodule status";
+                rs = await ReadToEndAsync().ConfigureAwait(false);
+            }
 
             var lines = rs.StdOut.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
             foreach (var line in lines)

@@ -18,8 +18,8 @@ namespace SourceGit.Models
         public bool IsCurrent { get; set; }
         public bool IsDetachedHead { get; set; }
         public string Upstream { get; set; }
-        public List<string> Ahead { get; set; } = [];
-        public List<string> Behind { get; set; } = [];
+        public HashSet<string> Ahead { get; set; } = [];
+        public HashSet<string> Behind { get; set; } = [];
         public string Remote { get; set; }
         public bool IsUpstreamGone { get; set; }
         public string WorktreePath { get; set; }

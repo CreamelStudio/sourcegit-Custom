@@ -18,7 +18,9 @@ namespace SourceGit.Models
 
             public void Dispose()
             {
-                Interlocked.Decrement(ref _target._lockCount);
+                var target = Interlocked.Exchange(ref _target, null);
+                if (target != null && Interlocked.Decrement(ref target._lockCount) == 0)
+                    target.FlushPendingUpdates();
             }
 
             private Watcher _target;
@@ -139,7 +141,36 @@ namespace SourceGit.Models
             _timer = null;
         }
 
+        private void FlushPendingUpdates()
+        {
+            if (_timer == null)
+                return;
+
+            // Git has finished; process only queued changes without waiting for the external-edit debounce.
+            MarkDue(ref _updateBranch);
+            MarkDue(ref _updateTags);
+            MarkDue(ref _updateWC);
+            MarkDue(ref _updateSubmodules);
+            MarkDue(ref _updateStashes);
+            ThreadPool.QueueUserWorkItem(Tick);
+        }
+
+        private static void MarkDue(ref long update)
+        {
+            var value = Interlocked.Read(ref update);
+            if (value > 0)
+                Interlocked.CompareExchange(ref update, 1, value);
+        }
+
         private void Tick(object sender)
+        {
+            if (_timer == null || Interlocked.Exchange(ref _isTicking, 1) != 0)
+                return;
+            try { ProcessPendingUpdates(); }
+            finally { Volatile.Write(ref _isTicking, 0); }
+        }
+
+        private void ProcessPendingUpdates()
         {
             if (Interlocked.Read(ref _lockCount) > 0)
                 return;
@@ -377,6 +408,7 @@ namespace SourceGit.Models
         private readonly string _root;
         private List<FileSystemWatcher> _watchers;
         private Timer _timer;
+        private int _isTicking;
 
         private long _lockCount;
         private long _updateWC;

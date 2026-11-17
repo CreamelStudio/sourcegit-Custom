@@ -1330,7 +1330,12 @@ namespace SourceGit.ViewModels
 
             Task.Run(async () =>
             {
-                await Dispatcher.UIThread.InvokeAsync(() => _histories.IsLoading = true);
+                // Start Git during window construction; match the result update's priority to preserve ordering.
+                Dispatcher.UIThread.Post(() =>
+                {
+                    if (!token.IsCancellationRequested && _histories != null)
+                        _histories.IsLoading = true;
+                }, DispatcherPriority.Send);
 
                 var builder = new StringBuilder();
                 builder
@@ -1338,6 +1343,7 @@ namespace SourceGit.ViewModels
                     .Append(_uiStates.BuildHistoryParams(GitDir));
 
                 var commits = await new Commands.QueryCommits(FullPath, builder.ToString())
+                    .WithCancellation(token)
                     .GetResultAsync()
                     .ConfigureAwait(false);
 

@@ -19,13 +19,19 @@ namespace SourceGit.Commands
         {
             WorkingDirectory = repo;
             Context = repo;
-            Args = "submodule status";
+            // Avoid Git for Windows' shell startup while keeping the same submodule status checks.
+            Args = OperatingSystem.IsWindows() ? "submodule--helper status" : "submodule status";
         }
 
         public async Task<List<Models.Submodule>> GetResultAsync()
         {
             var submodules = new List<Models.Submodule>();
             var rs = await ReadToEndAsync().ConfigureAwait(false);
+            if (!rs.IsSuccess && OperatingSystem.IsWindows())
+            {
+                Args = "submodule status";
+                rs = await ReadToEndAsync().ConfigureAwait(false);
+            }
 
             var lines = rs.StdOut.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
             var map = new Dictionary<string, Models.Submodule>();

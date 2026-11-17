@@ -56,7 +56,7 @@
           <Ellipse Width="8" Height="8"
                    HorizontalAlignment="Right" VerticalAlignment="Top"
                    Fill="Green"
-                   IsVisible="{Binding CurrentBranch?.Behind, Mode=OneWay, Converter={x:Static c:ListConverters.IsNotNullOrEmpty}}"/>
+                   IsVisible="{Binding CurrentBranch?.Behind.Count, Mode=OneWay, Converter={x:Static c:IntConverters.IsGreaterThanZero}}"/>
         </Grid>
       </Button>
 
@@ -73,7 +73,7 @@
           <Ellipse Width="8" Height="8"
                    HorizontalAlignment="Right" VerticalAlignment="Top"
                    Fill="Green"
-                   IsVisible="{Binding CurrentBranch?.Ahead, Mode=OneWay, Converter={x:Static c:ListConverters.IsNotNullOrEmpty}}"/>
+                   IsVisible="{Binding CurrentBranch?.Ahead.Count, Mode=OneWay, Converter={x:Static c:IntConverters.IsGreaterThanZero}}"/>
         </Grid>
       </Button>
 
